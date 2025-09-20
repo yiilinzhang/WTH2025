@@ -11,25 +11,34 @@ body {
     color: #333;
     line-height: 1.6;
     overflow-x: hidden;
+    min-width: 320px; /* Prevent too narrow initial width */
 }
 
 /* Screen Management */
 .screen {
     min-height: 100vh;
-    padding: 20px;
+    padding: 10px 5px;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .hidden {
     display: none !important;
 }
 
+/* Prevent layout shift on screen transitions */
+#rewardsScreen {
+    position: relative;
+    width: 100%;
+}
+
 /* Login/Signup Styles */
 .login-container {
-    max-width: 400px;
+    max-width: 500px;
     margin: 0 auto;
-    padding: 40px 20px;
+    padding: 40px 10px;
     text-align: center;
     flex: 1;
     display: flex;
@@ -93,12 +102,13 @@ input:focus {
 .btn-primary {
     background: #6B4423;
     color: white;
-    padding: 15px 20px;
+    padding: 16px 24px;
     border: none;
     border-radius: 8px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
+    min-height: 48px;
     transition: background 0.3s;
 }
 
@@ -144,6 +154,13 @@ input:focus {
 }
 
 /* Header and Back Button - Android Style */
+.header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
 .back-btn {
     background: #6B4423; /* Brown background like Android */
     color: white;
@@ -154,15 +171,20 @@ input:focus {
     font-size: 24px;
     font-weight: bold;
     cursor: pointer;
-    margin-bottom: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    align-self: flex-start;
+    flex-shrink: 0;
 }
 
 .back-btn:hover {
     background: #5A3820;
+}
+
+/* Override header for dashboard (no back button) */
+.dashboard-container .header {
+    display: block;
+    text-align: center;
 }
 
 .join-title {
@@ -199,12 +221,9 @@ input:focus {
     max-width: 500px;
     margin: 0 auto;
     text-align: center;
-    padding: 20px 0;
+    padding: 10px 5px;
 }
 
-.header {
-    margin-bottom: 30px;
-}
 
 .description {
     color: #8B6B47;
@@ -234,7 +253,7 @@ input:focus {
 .qr-container {
     max-width: 500px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px 5px;
     background: #F5E6D3; /* Kopitiam background like Android */
     min-height: 100vh;
     display: flex;
@@ -243,34 +262,34 @@ input:focus {
 
 .qr-container .header {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 20px;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 16px;
 }
 
 .qr-section {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 30px;
-    padding: 40px 20px;
+    gap: 20px;
+    padding: 20px;
 }
 
 /* Large QR Icon Card - matching Android 140dp card */
 .qr-icon-card {
-    width: 140px;
-    height: 140px;
+    width: 100px;
+    height: 100px;
     background: #D4A574; /* Golden background like Android */
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .qr-camera-icon {
-    font-size: 48px;
+    font-size: 36px;
     color: #6B4423;
 }
 
@@ -278,17 +297,17 @@ input:focus {
 .btn-scan {
     background: #8B4513; /* Brown like Android */
     color: white;
-    padding: 18px 40px;
+    padding: 14px 30px;
     border: none;
     border-radius: 32px; /* High radius like Android */
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     letter-spacing: 0.05em;
     cursor: pointer;
     width: 100%;
     max-width: 320px;
-    height: 64px;
-    margin-bottom: 20px;
+    height: 50px;
+    margin-bottom: 10px;
 }
 
 .btn-scan:hover {
@@ -297,35 +316,35 @@ input:focus {
 
 .qr-info-text {
     color: #666666;
-    font-size: 16px;
-    line-height: 1.5;
+    font-size: 14px;
+    line-height: 1.4;
     text-align: center;
     margin: 0;
 }
 
 /* Manual Entry Section */
 .manual-entry {
-    margin-top: 40px;
+    margin-top: 20px;
     width: 100%;
-    max-width: 320px;
+    max-width: 400px;
 }
 
 .manual-entry-text {
     color: #8B5A3C;
-    font-size: 16px;
-    margin-bottom: 15px;
+    font-size: 14px;
+    margin-bottom: 10px;
     text-align: center;
 }
 
 .session-input {
     width: 100%;
-    padding: 16px 20px;
+    padding: 12px 16px;
     border: 2px solid #D4A574;
     border-radius: 12px;
     font-size: 16px;
     background: white;
     color: #6B4423;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     box-sizing: border-box;
     text-align: center;
 }
@@ -339,14 +358,14 @@ input:focus {
 .btn-join {
     background: #8B5A3C;
     color: white;
-    padding: 16px 30px;
+    padding: 12px 24px;
     border: none;
     border-radius: 12px;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     width: 100%;
-    height: 56px;
+    height: 48px;
 }
 
 .btn-join:hover {
@@ -376,6 +395,98 @@ input:focus {
     max-width: 300px;
     border-radius: 8px;
     margin: 20px 0;
+}
+
+/* Find Friends Screen Styles */
+.find-friends-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px 10px;
+}
+
+.session-info {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 20px 0;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.session-info h3 {
+    color: #6B4423;
+    font-size: 24px;
+    margin: 0 0 8px 0;
+}
+
+.session-info p {
+    color: #8B5A3C;
+    margin: 0;
+    font-size: 16px;
+}
+
+.friends-selection {
+    margin: 20px 0;
+}
+
+.friends-selection h4 {
+    color: #6B4423;
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.available-friends-list {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.friend-selection-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.friend-selection-item:last-child {
+    border-bottom: none;
+}
+
+.friend-checkbox {
+    margin-right: 15px;
+    width: 20px;
+    height: 20px;
+}
+
+.friend-selection-info {
+    flex: 1;
+}
+
+.friend-selection-name {
+    font-weight: bold;
+    color: #6B4423;
+    margin-bottom: 2px;
+}
+
+.friend-selection-email {
+    color: #8B5A3C;
+    font-size: 14px;
+}
+
+.walking-options {
+    margin: 30px 0;
+}
+
+.walking-options button {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 /* Walking Session Styles - Full Screen Layout */
@@ -499,10 +610,195 @@ input:focus {
     background: #B85555;
 }
 
+/* Session Completion Styles - Matching Android Layout */
+.completion-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px 10px;
+    background: #F5E6D3;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.completion-back-btn {
+    width: 50px;
+    height: 50px;
+    background: #6B4423;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.completion-title {
+    font-size: 42px;
+    font-weight: bold;
+    color: #6B4423;
+    text-align: center;
+    margin: 24px 0 20px 0;
+    letter-spacing: 0.05em;
+}
+
+.completion-points {
+    font-size: 28px;
+    font-weight: bold;
+    color: #8B5A3C;
+    text-align: center;
+    margin: 0 0 40px 0;
+}
+
+.completion-stats {
+    display: flex;
+    background: #E8D4C1;
+    padding: 24px;
+    border-radius: 8px;
+    margin-bottom: 40px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.completion-stat {
+    flex: 1;
+    text-align: center;
+}
+
+.completion-stat-value {
+    font-size: 26px;
+    font-weight: bold;
+    color: #6B4423;
+    margin-bottom: 4px;
+}
+
+.completion-stat-label {
+    font-size: 18px;
+    color: #8B6B47;
+}
+
+.completion-companions-title {
+    font-size: 26px;
+    font-weight: bold;
+    color: #6B4423;
+    text-align: center;
+    margin: 0 0 8px 0;
+}
+
+.completion-companions-subtitle {
+    font-size: 18px;
+    color: #9B7B5B;
+    text-align: center;
+    margin: 0 0 20px 0;
+}
+
+.completion-companions-container {
+    border: 2px solid #D4A574;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+
+.completion-companions-header {
+    display: flex;
+    background: #E8D4C1;
+    padding: 16px;
+}
+
+.completion-companions-name {
+    flex: 1;
+    font-size: 20px;
+    font-weight: bold;
+    color: #6B4423;
+}
+
+.completion-companions-action {
+    font-size: 20px;
+    font-weight: bold;
+    color: #6B4423;
+    padding-right: 16px;
+}
+
+.completion-friends-list {
+    background: white;
+}
+
+.completion-friend-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #E8D4C1;
+}
+
+.completion-friend-item:last-child {
+    border-bottom: none;
+}
+
+.completion-friend-name {
+    flex: 1;
+    font-size: 18px;
+    color: #6B4423;
+}
+
+.completion-add-friend-btn {
+    background: #8B5A3C;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.completion-add-friend-btn:hover {
+    background: #7A4E34;
+}
+
+.completion-add-friend-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.completion-home-btn {
+    width: 100%;
+    height: 72px;
+    background: #6B4423;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 20px 0 0 0;
+    box-sizing: border-box;
+    max-width: 400px;
+    align-self: center;
+}
+
+.completion-home-btn:hover {
+    background: #5A3820;
+}
+
 /* Friends Styles */
 .friends-container {
     max-width: 500px;
     margin: 0 auto;
+    padding: 10px 5px;
+}
+
+.username-display {
+    margin-bottom: 15px;
+}
+
+.username-display p {
+    color: #8B5A3C;
+    font-size: 14px;
+    margin: 0;
+    text-align: center;
 }
 
 .add-friend {
@@ -561,52 +857,171 @@ input:focus {
 .history-container {
     max-width: 500px;
     margin: 0 auto;
+    padding: 10px 5px;
+}
+
+.history-subtitle {
+    text-align: center;
+    color: #8B5A3C;
+    font-size: 16px;
+    margin: 0 0 20px 0;
 }
 
 .points-summary {
     background: white;
-    padding: 20px;
+    padding: 15px;
     border-radius: 12px;
-    text-align: center;
-    margin: 20px 0;
+    margin: 10px 0;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.total-points {
-    font-size: 24px;
+.points-display {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.points-number {
+    font-size: 32px;
     font-weight: bold;
     color: #6B4423;
+    text-align: left;
+}
+
+.weekly-streak {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+}
+
+.weekly-streak span {
+    color: #8B5A3C;
+    font-size: 16px;
+}
+
+.progress-container {
+    width: 100%;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #E8D4C1;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #D4A574;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.motivational-text {
+    color: #8B5A3C;
+    font-size: 14px;
+    text-align: left;
+    margin-top: 8px;
+}
+
+.sessions-header {
+    color: #6B4423;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px 0 10px 0;
+    text-align: left;
 }
 
 .history-list {
-    margin-top: 20px;
+    margin-top: 10px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .history-card {
     background: white;
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 12px 16px;
+    margin-bottom: 0;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.history-icon {
+    width: 40px;
+    height: 40px;
+    background: #D4A574;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.history-content {
+    flex: 1;
+    min-width: 0;
 }
 
 .history-location {
     font-weight: bold;
     color: #6B4423;
-    margin-bottom: 5px;
+    font-size: 16px;
+    margin: 0 0 2px 0;
+    line-height: 1.2;
 }
 
-.history-details {
+.history-time {
     color: #8B5A3C;
     font-size: 14px;
+    margin: 2px 0 4px 0;
+    line-height: 1.2;
+}
+
+.history-details-text {
+    color: #9B7B5B;
+    font-size: 13px;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.history-points {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.history-points-value {
+    font-weight: bold;
+    font-size: 20px;
+    color: #D4A574;
+    line-height: 1;
+    margin: 0;
+}
+
+.history-points-label {
+    font-size: 12px;
+    color: #9B7B5B;
+    margin: 2px 0 0 0;
+    line-height: 1;
 }
 
 /* Rewards Styles */
 .rewards-container {
     max-width: 500px;
+    width: 100%;
     margin: 0 auto;
+    padding: 0 5px;
+    box-sizing: border-box;
+    min-height: 100vh; /* Ensure proper initial height */
 }
 
 .points-balance {
@@ -623,9 +1038,19 @@ input:focus {
 
 .drinks-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
-    margin: 20px 0;
+    margin: 20px auto;
+    max-width: 500px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Make the 5th drink card (Teh Peng) span both columns like Android */
+.drink-card:nth-child(5) {
+    grid-column: 1 / -1;
+    max-width: 190px;
+    margin: 0 auto;
 }
 
 .drink-card {
@@ -636,6 +1061,11 @@ input:focus {
     cursor: pointer;
     transition: transform 0.2s;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    min-height: 120px; /* Prevent layout shift */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .drink-card:hover {
@@ -678,6 +1108,286 @@ input:focus {
     font-weight: bold;
 }
 
+/* Schedule Walks Styles */
+.schedule-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 10px 5px;
+}
+
+.tab-navigation {
+    display: flex;
+    background: white;
+    border-radius: 12px;
+    margin: 20px 0;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.tab-button {
+    flex: 1;
+    padding: 16px;
+    border: none;
+    background: white;
+    color: #8B5A3C;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tab-button.active {
+    background: #6B4423;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.walks-header {
+    margin: 20px 0;
+}
+
+.create-walk-btn {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.walks-list {
+    margin-top: 20px;
+}
+
+.walk-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.walk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.walk-location {
+    font-size: 20px;
+    font-weight: bold;
+    color: #6B4423;
+    margin: 0;
+}
+
+.walk-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.walk-status.active {
+    background: #E8F5E8;
+    color: #4CAF50;
+}
+
+.walk-status.full {
+    background: #FFF3E0;
+    color: #FF9800;
+}
+
+.walk-datetime {
+    color: #8B5A3C;
+    font-size: 16px;
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.walk-participants {
+    color: #8B5A3C;
+    font-size: 14px;
+    margin: 8px 0;
+}
+
+.walk-description {
+    color: #666;
+    font-size: 14px;
+    margin: 12px 0;
+    font-style: italic;
+}
+
+.walk-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.walk-action-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.walk-action-btn.primary {
+    background: #6B4423;
+    color: white;
+}
+
+.walk-action-btn.secondary {
+    background: #E8D4C1;
+    color: #6B4423;
+}
+
+.walk-action-btn.danger {
+    background: #FFE5E5;
+    color: #E53935;
+}
+
+.walk-action-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Location Buttons */
+.location-buttons {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.location-btn {
+    background: white;
+    border: 3px solid #D4A574;
+    padding: 20px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #6B4423;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.location-btn:hover {
+    background: #F5E6D3;
+    border-color: #6B4423;
+    transform: translateY(-2px);
+}
+
+.location-btn.selected {
+    background: #6B4423;
+    color: white;
+    border-color: #6B4423;
+}
+
+/* Participant Buttons */
+.participant-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.participant-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #D4A574;
+    background: white;
+    color: #6B4423;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.participant-btn:hover {
+    background: #F5E6D3;
+    border-color: #6B4423;
+    transform: scale(1.1);
+}
+
+.participant-btn.active {
+    background: #6B4423;
+    color: white;
+    border-color: #6B4423;
+}
+
+/* Create Walk Styles */
+.create-walk-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 10px 5px;
+}
+
+.create-walk-form {
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: #6B4423;
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #D4A574;
+    border-radius: 8px;
+    font-size: 16px;
+    background: white;
+    color: #6B4423;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #6B4423;
+    box-shadow: 0 0 0 2px rgba(107, 68, 35, 0.2);
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.submit-walk-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 16px;
+    font-size: 18px;
+}
+
 /* Loading Styles */
 .loading {
     position: fixed;
@@ -712,11 +1422,11 @@ input:focus {
 /* Responsive Design */
 @media (max-width: 480px) {
     .screen {
-        padding: 15px;
+        padding: 8px 5px;
     }
 
     .login-container {
-        padding: 20px 15px;
+        padding: 15px 10px;
     }
 
     h1 {
@@ -734,6 +1444,10 @@ input:focus {
 
     .drinks-grid {
         grid-template-columns: 1fr 1fr;
+    }
+
+    .drink-card:nth-child(5) {
+        max-width: 150px;
     }
 
     .walking-controls {

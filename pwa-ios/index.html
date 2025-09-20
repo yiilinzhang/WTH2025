@@ -70,6 +70,10 @@
                 ☕ JOIN WALKING SESSION ☕
             </button>
 
+            <button onclick="showSchedule()" class="btn-large" style="margin-top: 15px;">
+                📅 WALKING SCHEDULE 📅
+            </button>
+
             <p class="description">Scan QR or enter code to lim kopi and walk!</p>
 
             <div class="button-grid">
@@ -99,7 +103,7 @@
     <div id="qrScreen" class="screen hidden">
         <div class="qr-container">
             <div class="header">
-                <button onclick="showDashboard()" class="back-btn">← Back</button>
+                <button onclick="showDashboard()" class="back-btn">←</button>
                 <h1 class="join-title">Join Session</h1>
             </div>
 
@@ -121,6 +125,30 @@
                 <p class="manual-entry-text">Or enter session code manually:</p>
                 <input type="text" id="sessionCode" placeholder="East Coast Park" class="session-input">
                 <button onclick="joinSession()" class="btn-join">Join Session</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Find Friends Screen -->
+    <div id="findFriendsScreen" class="screen hidden">
+        <div class="find-friends-container">
+            <div class="header">
+                <button onclick="showDashboard()" class="back-btn">←</button>
+                <h2>Ready to Walk?</h2>
+            </div>
+
+            <div class="session-info">
+                <h3 id="sessionLocationDisplay">East Coast Park</h3>
+                <p>When others scan this same code, they'll automatically join your walking group!</p>
+            </div>
+
+            <div class="walking-options">
+                <button onclick="startWalkingSession()" class="btn-large" style="width: 100%; margin: 30px 0;">
+                    🚶 START WALKING 🚶
+                </button>
+                <p style="text-align: center; color: #8B5A3C; font-size: 14px; margin: 0;">
+                    Others can join by scanning the same QR code
+                </p>
             </div>
         </div>
     </div>
@@ -160,12 +188,16 @@
     <div id="friendsScreen" class="screen hidden">
         <div class="friends-container">
             <div class="header">
-                <button onclick="showDashboard()" class="back-btn">← Back</button>
+                <button onclick="showDashboard()" class="back-btn">←</button>
                 <h2>☕ My Kopi Kakis ☕</h2>
             </div>
 
+            <div class="username-display">
+                <p id="usernameText">Your username is: </p>
+            </div>
+
             <div class="add-friend">
-                <input type="email" id="friendEmail" placeholder="Friend's email">
+                <input type="text" id="friendEmail" placeholder="username">
                 <button onclick="addFriend()" class="btn-primary">Add Friend</button>
             </div>
 
@@ -179,15 +211,30 @@
     <div id="historyScreen" class="screen hidden">
         <div class="history-container">
             <div class="header">
-                <button onclick="showDashboard()" class="back-btn">← Back</button>
+                <button onclick="showDashboard()" class="back-btn">←</button>
                 <h2>☕ Walking History ☕</h2>
             </div>
 
+            <p class="history-subtitle">Track your walking journey!</p>
+
             <div class="points-summary">
-                <div class="total-points">
-                    <span id="totalPoints">0</span> Total Points
+                <div class="points-display">
+                    <span class="points-number">Points: <span id="totalPoints">0</span></span>
+                    <div class="weekly-streak">
+                        <span id="weeklyStreak">Weekly streak: 0 day(s)</span>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div id="progressFill" class="progress-fill"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="motivational-text">
+                        🏆 Keep walking to earn more kopi points!
+                    </div>
                 </div>
             </div>
+
+            <h3 class="sessions-header">Your Walking Sessions ☕</h3>
 
             <div id="historyList" class="history-list">
                 <!-- Walking history will be loaded here -->
@@ -195,11 +242,69 @@
         </div>
     </div>
 
+    <!-- Session Completion Screen -->
+    <div id="completionScreen" class="screen hidden">
+        <div class="completion-container">
+            <!-- Back Button -->
+            <button onclick="showDashboard()" class="completion-back-btn">←</button>
+
+            <!-- Congratulations Section -->
+            <h1 class="completion-title">🎉 Well Done!</h1>
+            <h2 id="completionPointsEarned" class="completion-points">You've earned 0 points!</h2>
+
+            <!-- Session Stats -->
+            <div class="completion-stats">
+                <div class="completion-stat">
+                    <div id="completionDistance" class="completion-stat-value">0.0 km</div>
+                    <div class="completion-stat-label">Distance</div>
+                </div>
+                <div class="completion-stat">
+                    <div id="completionDuration" class="completion-stat-value">00:00</div>
+                    <div class="completion-stat-label">Duration</div>
+                </div>
+                <div class="completion-stat">
+                    <div id="completionSteps" class="completion-stat-value">0</div>
+                    <div class="completion-stat-label">Steps</div>
+                </div>
+            </div>
+
+            <!-- Walking Companions Section -->
+            <div id="walkingCompanionsSection">
+                <h3 class="completion-companions-title">Walking Companions</h3>
+                <p class="completion-companions-subtitle">Add companions from this walk as friends</p>
+
+                <!-- Companions List Container -->
+            <div class="completion-companions-container">
+                <!-- Table Header -->
+                <div class="completion-companions-header">
+                    <div class="completion-companions-name">Name</div>
+                    <div class="completion-companions-action">Action</div>
+                </div>
+
+                <!-- Friends List -->
+                <div id="completionFriendsList" class="completion-friends-list">
+                    <div class="completion-friend-item">
+                        <div class="completion-friend-name">Walking Partner 1</div>
+                        <button class="completion-add-friend-btn" onclick="addWalkingFriend('partner1')">Add Friend</button>
+                    </div>
+                    <div class="completion-friend-item">
+                        <div class="completion-friend-name">Walking Partner 2</div>
+                        <button class="completion-add-friend-btn" onclick="addWalkingFriend('partner2')">Add Friend</button>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <!-- Back to Home Button -->
+            <button onclick="showDashboard()" class="completion-home-btn">Back to Home</button>
+        </div>
+    </div>
+
     <!-- Rewards Screen -->
     <div id="rewardsScreen" class="screen hidden">
         <div class="rewards-container">
             <div class="header">
-                <button onclick="showDashboard()" class="back-btn">← Back</button>
+                <button onclick="showDashboard()" class="back-btn">←</button>
                 <h2>🎁 Rewards 🎁</h2>
             </div>
 
@@ -207,27 +312,166 @@
                 <span id="rewardPoints">0</span> Points Available
             </div>
 
+            <h3 style="color: #6B4423; font-size: 20px; font-weight: bold; margin: 20px 0 12px 0; text-align: center;">Redeem Your Drinks</h3>
+
             <div class="drinks-grid">
+                <!-- Row 1 -->
                 <div class="drink-card" onclick="redeemDrink('Kopi O', 50)">
                     <div class="drink-icon">☕</div>
                     <div class="drink-name">Kopi O</div>
                     <div class="drink-points">50 pts</div>
                 </div>
-                <div class="drink-card" onclick="redeemDrink('Hot Kopi', 60)">
+                <div class="drink-card" onclick="redeemDrink('Hot Kopi', 75)">
                     <div class="drink-icon">☕</div>
                     <div class="drink-name">Hot Kopi</div>
-                    <div class="drink-points">60 pts</div>
+                    <div class="drink-points">75 pts</div>
                 </div>
-                <div class="drink-card" onclick="redeemDrink('Teh Peng', 55)">
+
+                <!-- Row 2 -->
+                <div class="drink-card" onclick="redeemDrink('Hot Teh', 75)">
+                    <div class="drink-icon">🍵</div>
+                    <div class="drink-name">Hot Teh</div>
+                    <div class="drink-points">75 pts</div>
+                </div>
+                <div class="drink-card" onclick="redeemDrink('Kopi Peng', 100)">
+                    <div class="drink-icon">🧊</div>
+                    <div class="drink-name">Kopi Peng</div>
+                    <div class="drink-points">100 pts</div>
+                </div>
+
+                <!-- Row 3 -->
+                <div class="drink-card" onclick="redeemDrink('Teh Peng', 100)">
                     <div class="drink-icon">🧊</div>
                     <div class="drink-name">Teh Peng</div>
-                    <div class="drink-points">55 pts</div>
+                    <div class="drink-points">100 pts</div>
                 </div>
             </div>
+
+            <h3 style="color: #6B4423; font-size: 20px; font-weight: bold; margin: 30px 0 12px 0; text-align: center;">Your Kopi Coupons</h3>
 
             <div id="couponsList" class="coupons-list">
                 <!-- Redeemed coupons will appear here -->
             </div>
+        </div>
+    </div>
+
+    <!-- Scheduled Walks Screen -->
+    <div id="scheduleScreen" class="screen hidden">
+        <div class="schedule-container">
+            <div class="header">
+                <button onclick="showDashboard()" class="back-btn">←</button>
+                <h2>📅 Walking Schedule</h2>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button id="allWalksTab" class="tab-button active" onclick="switchTab('allWalks')">All Walks</button>
+                <button id="scheduleWalkTab" class="tab-button" onclick="switchTab('scheduleWalk')">Schedule Walk</button>
+            </div>
+
+            <!-- All Walks Tab Content -->
+            <div id="allWalksContent" class="tab-content active">
+                <h3 style="color: #6B4423; font-size: 18px; font-weight: bold; margin: 20px 0 15px 0;">My Scheduled Walks</h3>
+                <div id="myWalksList" class="walks-list">
+                    <!-- My scheduled walks will be loaded here -->
+                </div>
+
+                <h3 style="color: #6B4423; font-size: 18px; font-weight: bold; margin: 30px 0 15px 0;">Nearby Walks</h3>
+                <div id="nearbyWalksList" class="walks-list">
+                    <!-- Nearby scheduled walks will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Schedule Walk Tab Content -->
+            <div id="scheduleWalkContent" class="tab-content">
+                <form id="createWalkForm" class="create-walk-form">
+                    <div class="form-group">
+                        <label style="font-size: 20px; margin-bottom: 16px;">📍 Choose Location</label>
+                        <div class="location-buttons">
+                            <button type="button" class="location-btn" onclick="selectLocation('East Coast Park')">
+                                🏖️<br>East Coast Park
+                            </button>
+                            <button type="button" class="location-btn" onclick="selectLocation('Botanic Garden')">
+                                🌿<br>Botanic Garden
+                            </button>
+                            <button type="button" class="location-btn" onclick="selectLocation('Bishan Park')">
+                                🌳<br>Bishan Park
+                            </button>
+                        </div>
+                        <input type="hidden" id="walkLocation" required>
+                        <p id="selectedLocationText" style="text-align: center; color: #6B4423; font-size: 18px; margin-top: 15px; font-weight: bold;"></p>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="font-size: 20px; margin-bottom: 12px;">📅 Date</label>
+                        <input type="date" id="walkDate" required style="font-size: 18px; padding: 16px;">
+                    </div>
+
+                    <div class="form-group">
+                        <label style="font-size: 20px; margin-bottom: 12px;">⏰ Time</label>
+                        <input type="time" id="walkTime" required style="font-size: 18px; padding: 16px;">
+                    </div>
+
+                    <input type="hidden" id="maxParticipants" value="10">
+
+                    <button type="submit" class="btn-primary submit-walk-btn" style="font-size: 22px; padding: 20px; margin-top: 30px;">
+                        🚶 CREATE WALK 🚶
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Walk Screen -->
+    <div id="createWalkScreen" class="screen hidden">
+        <div class="create-walk-container">
+            <div class="header">
+                <button onclick="showSchedule()" class="back-btn">←</button>
+                <h2>Schedule New Walk</h2>
+            </div>
+
+            <form id="createWalkForm" class="create-walk-form">
+                <div class="form-group">
+                    <label for="walkLocation">Location</label>
+                    <select id="walkLocation" required>
+                        <option value="">Select Location</option>
+                        <option value="East Coast Park">East Coast Park</option>
+                        <option value="Botanic Garden">Botanic Garden</option>
+                        <option value="Bishan Park">Bishan Park</option>
+                        <option value="Marina Bay">Marina Bay</option>
+                        <option value="Sentosa">Sentosa</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="walkDate">Date</label>
+                    <input type="date" id="walkDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="walkTime">Time</label>
+                    <input type="time" id="walkTime" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="maxParticipants">Max Participants</label>
+                    <select id="maxParticipants">
+                        <option value="4">4 people</option>
+                        <option value="6">6 people</option>
+                        <option value="8" selected>8 people</option>
+                        <option value="10">10 people</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="walkDescription">Description (optional)</label>
+                    <textarea id="walkDescription" placeholder="Tell others about your walk plans..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary submit-walk-btn">
+                    Create Walk
+                </button>
+            </form>
         </div>
     </div>
 
@@ -251,5 +495,8 @@
 
     <!-- App Script -->
     <script src="app.js"></script>
+
+    <!-- Schedule Functions -->
+    <script src="schedule-functions.js"></script>
 </body>
 </html>
