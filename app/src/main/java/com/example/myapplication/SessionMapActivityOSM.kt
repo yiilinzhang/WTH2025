@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
@@ -23,6 +24,10 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import android.graphics.*
+import android.graphics.drawable.BitmapDrawable
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
+import androidx.core.content.ContextCompat
 
 class SessionMapActivityOSM : AppCompatActivity() {
 
@@ -34,6 +39,7 @@ class SessionMapActivityOSM : AppCompatActivity() {
     private lateinit var sessionId: String
     private lateinit var sessionRef: DatabaseReference
     private lateinit var myLocationOverlay: MyLocationNewOverlay
+    private var userLocationMarker: Marker? = null
 
     // UI Elements
     private lateinit var distanceText: TextView
@@ -122,17 +128,33 @@ class SessionMapActivityOSM : AppCompatActivity() {
         mapContainer.removeAllViews()
         mapContainer.addView(map)
 
-        // Set initial position and zoom
-        map.controller.setZoom(15.0)
+        // Set initial position and zoom - very close for walking
+        map.controller.setZoom(18.5)
 
-        // Add location overlay
+        // Add location overlay (but we'll hide the default icon)
         myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), map)
         myLocationOverlay.enableMyLocation()
-        myLocationOverlay.enableFollowLocation()
-        map.overlays.add(myLocationOverlay)
+        // Don't enable follow location for the default overlay since we'll use our custom marker
+        // myLocationOverlay.enableFollowLocation()
+        // Don't add the default overlay since we'll use custom marker
+        // map.overlays.add(myLocationOverlay)
 
-        // Initialize UI to show zeros
-        updateUI()
+        // Initialize UI to show zeros (or mock data for demo)
+        if (MockDataManager.USE_MOCK_DATA || sessionId.isEmpty()) {
+            // Set initial mock location at SUTD
+            val sutdLocation = GeoPoint(1.3416, 103.9634)  // SUTD coordinates
+            map.controller.setCenter(sutdLocation)
+            map.controller.setZoom(18.5)  // Very close zoom for walking - street level detail
+            updateUserProfileMarker(sutdLocation)
+
+            // Start with some mock progress
+            totalDistance = 850.0
+            totalSteps = 1105
+            totalPoints = 8
+            updateUI()
+        } else {
+            updateUI()
+        }
 
         // Check permissions and start tracking
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -164,6 +186,9 @@ class SessionMapActivityOSM : AppCompatActivity() {
                     val geoPoint = GeoPoint(location.latitude, location.longitude)
                     map.controller.setCenter(geoPoint)
 
+                    // Create initial profile marker
+                    updateUserProfileMarker(geoPoint)
+
                     // Store as last location but don't add distance (this is starting point)
                     lastLocation = location
 
@@ -191,6 +216,9 @@ class SessionMapActivityOSM : AppCompatActivity() {
 
         // Update map position
         val geoPoint = GeoPoint(location.latitude, location.longitude)
+
+        // Update or create user profile marker
+        updateUserProfileMarker(geoPoint)
         if (lastLocation == null) {
             // First location update
             map.controller.setCenter(geoPoint)
@@ -350,21 +378,56 @@ class SessionMapActivityOSM : AppCompatActivity() {
     }
 
     private fun endSession() {
-        // Save session data to Firebase
-        val sessionData = mapOf(
-            "endTime" to System.currentTimeMillis(),
-            "totalDistance" to totalDistance,
-            "totalSteps" to totalSteps,
-            "totalPoints" to totalPoints,
-            "duration" to (System.currentTimeMillis() - startTime)
-        )
+        // If in mock mode, use the actual values from the map screen
+        if (MockDataManager.USE_MOCK_DATA || sessionId.isEmpty()) {
+            // Calculate the actual elapsed time
+            val actualDuration = System.currentTimeMillis() - startTime
 
-        sessionRef.child("results").setValue(sessionData)
-            .addOnSuccessListener {
-                Toast.makeText(this,
-                    "Session ended! You earned $totalPoints points!", Toast.LENGTH_LONG).show()
-                finish()
+            // Navigate directly to completion screen with actual tracked data
+            val intent = Intent(this, SessionCompletionActivity::class.java).apply {
+                putExtra("sessionId", sessionId)
+                putExtra("userId", "mock_user")
+                putExtra("distance", totalDistance)  // Use actual distance from map
+                putExtra("duration", actualDuration)  // Use actual duration
             }
+            startActivity(intent)
+            finish()
+        } else {
+            // Save session data to Firebase
+            val sessionData = mapOf(
+                "endTime" to System.currentTimeMillis(),
+                "totalDistance" to totalDistance,
+                "totalSteps" to totalSteps,
+                "totalPoints" to totalPoints,
+                "duration" to (System.currentTimeMillis() - startTime)
+            )
+
+            sessionRef.child("results").setValue(sessionData)
+                .addOnSuccessListener {
+                    // Navigate to completion screen
+                    val currentUserId = auth.currentUser?.uid ?: ""
+                    val intent = Intent(this, SessionCompletionActivity::class.java).apply {
+                        putExtra("sessionId", sessionId)
+                        putExtra("userId", currentUserId)
+                        putExtra("distance", totalDistance)
+                        putExtra("duration", System.currentTimeMillis() - startTime)
+                    }
+                    startActivity(intent)
+                    finish()
+                }
+                .addOnFailureListener {
+                    // Even if Firebase fails, navigate to completion
+                    val currentUserId = auth.currentUser?.uid ?: ""
+                    val intent = Intent(this, SessionCompletionActivity::class.java).apply {
+                        putExtra("sessionId", sessionId)
+                        putExtra("userId", currentUserId)
+                        putExtra("distance", totalDistance)
+                        putExtra("duration", System.currentTimeMillis() - startTime)
+                    }
+                    startActivity(intent)
+                    finish()
+                }
+        }
     }
 
     override fun onResume() {
@@ -375,6 +438,89 @@ class SessionMapActivityOSM : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         map.onPause()
+    }
+
+    private fun updateUserProfileMarker(geoPoint: GeoPoint) {
+        // Remove existing marker if any
+        userLocationMarker?.let {
+            map.overlays.remove(it)
+        }
+
+        // Create new marker with profile photo
+        userLocationMarker = Marker(map).apply {
+            position = geoPoint
+            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+
+            // Create a circular profile photo icon
+            val profileIcon = createCircularProfileIcon()
+            icon = profileIcon
+
+            title = "You"
+            snippet = "Your current location"
+        }
+
+        map.overlays.add(userLocationMarker)
+        map.controller.animateTo(geoPoint)
+        // Keep zoom level high for walking
+        if (map.zoomLevelDouble < 18.0) {
+            map.controller.setZoom(18.5)
+        }
+        map.invalidate()
+    }
+
+    private fun createCircularProfileIcon(): BitmapDrawable {
+        // Create a mock profile photo (colored circle with initial)
+        val size = 120 // Size in pixels
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        // Draw white background circle (border)
+        val borderPaint = Paint().apply {
+            color = Color.WHITE
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f, borderPaint)
+
+        // Draw colored circle (profile background)
+        val backgroundPaint = Paint().apply {
+            color = Color.parseColor("#4A90A4")
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        canvas.drawCircle(size / 2f, size / 2f, (size / 2f) - 4, backgroundPaint)
+
+        // Draw user initial
+        val textPaint = Paint().apply {
+            color = Color.WHITE
+            textSize = size * 0.4f
+            textAlign = Paint.Align.CENTER
+            isAntiAlias = true
+            typeface = Typeface.DEFAULT_BOLD
+        }
+
+        // Get the initial (mock data for now)
+        val initial = "U" // For "User"
+
+        // Calculate text position
+        val textBounds = Rect()
+        textPaint.getTextBounds(initial, 0, initial.length, textBounds)
+        val textHeight = textBounds.height()
+        val y = size / 2f + textHeight / 2f
+
+        canvas.drawText(initial, size / 2f, y, textPaint)
+
+        // Optional: Add a shadow/glow effect
+        val glowPaint = Paint().apply {
+            color = Color.parseColor("#67AB9F")
+            style = Paint.Style.STROKE
+            strokeWidth = 3f
+            isAntiAlias = true
+            alpha = 128
+        }
+        canvas.drawCircle(size / 2f, size / 2f, (size / 2f) - 2, glowPaint)
+
+        return BitmapDrawable(resources, bitmap)
     }
 
     override fun onDestroy() {

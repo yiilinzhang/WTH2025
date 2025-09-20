@@ -57,6 +57,11 @@
             android:name=".SessionMapActivityOSM"
             android:exported="false"
             android:label="Walking Session" />
+
+        <activity
+            android:name=".SessionCompletionActivity"
+            android:exported="false"
+            android:label="Session Complete" />
     </application>
 
 </manifest>
