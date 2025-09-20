@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5DC">
+
+    <TextView
+        android:id="@+id/sessionTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Session Active"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:textColor="#4A4A4A"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="50dp" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/sessionInfoCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        app:cardBackgroundColor="#FFFFFF"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:layout_constraintTop_toBottomOf="@+id/sessionTitle"
+        android:layout_marginTop="30dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/sessionCodeLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Session Code"
+                android:textSize="14sp"
+                android:textColor="#888888" />
+
+            <TextView
+                android:id="@+id/sessionCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ABC-123"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#8B4513"
+                android:layout_marginTop="5dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E0E0E0"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="15dp" />
+
+            <TextView
+                android:id="@+id/participantsLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Participants"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#4A4A4A" />
+
+            <TextView
+                android:id="@+id/participant1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👤 John (Host)"
+                android:textSize="16sp"
+                android:textColor="#666666"
+                android:layout_marginTop="10dp" />
+
+            <TextView
+                android:id="@+id/participant2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👤 Sarah"
+                android:textSize="16sp"
+                android:textColor="#666666"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:id="@+id/participant3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👤 Mike"
+                android:textSize="16sp"
+                android:textColor="#666666"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:id="@+id/participantCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3 people in session"
+                android:textSize="14sp"
+                android:textColor="#888888"
+                android:layout_marginTop="15dp" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <Button
+        android:id="@+id/inviteButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Invite Friends"
+        android:textSize="18sp"
+        android:backgroundTint="#D2B48C"
+        android:layout_marginHorizontal="30dp"
+        app:layout_constraintTop_toBottomOf="@+id/sessionInfoCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="30dp" />
+
+    <Button
+        android:id="@+id/startWalkButton"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Start Walking Session"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:backgroundTint="#8B4513"
+        android:layout_marginHorizontal="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="40dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
