@@ -20,4 +20,24 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
+
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent" android:layout_height="match_parent">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/previewView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:ignore="MissingClass" />
+
+        <TextView
+            android:id="@+id/tvScanHint"
+            android:text="Point camera at QR"
+            android:textColor="#FFFFFFFF" android:textSize="18sp"
+            android:padding="12dp"
+            android:background="#80000000"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    </FrameLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -22,12 +22,5 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_main"
-        app:menu="@menu/activity_main_drawer" >
-
-        <Button
-            android:id="@+id/button"
-            android:layout_width="182dp"
-            android:layout_height="130dp"
-            android:text="Button" />
-    </com.google.android.material.navigation.NavigationView>
+        app:menu="@menu/activity_main_drawer" />
 </androidx.drawerlayout.widget.DrawerLayout>

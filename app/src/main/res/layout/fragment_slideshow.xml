@@ -7,6 +7,21 @@
     android:layout_height="match_parent"
     tools:context=".ui.slideshow.SlideshowFragment" >
 
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical" android:padding="16dp"
+        android:layout_width="match_parent" android:layout_height="match_parent">
+
+        <TextView android:id="@+id/tvPointsBalance"
+            android:text="Points: 0" android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+        <Button android:id="@+id/btnRedeemKopi"
+            android:text="Redeem 1 kopi (100 pts)"
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    </LinearLayout>
+
     <TextView
         android:id="@+id/text_slideshow"
         android:layout_width="match_parent"
