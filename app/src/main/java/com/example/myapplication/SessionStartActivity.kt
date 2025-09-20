@@ -37,6 +37,10 @@ class SessionStartActivity : AppCompatActivity() {
         findViewById<Button>(R.id.scanQrButton).setOnClickListener {
             startQRScanner()
         }
+
+        findViewById<Button>(R.id.backButton).setOnClickListener {
+            finish()
+        }
     }
 
     private fun checkLocationPermissions() {

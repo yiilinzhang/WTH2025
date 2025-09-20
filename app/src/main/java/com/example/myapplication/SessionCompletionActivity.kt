@@ -42,6 +42,11 @@ class SessionCompletionActivity : AppCompatActivity() {
         friendsListContainer = findViewById(R.id.friendsListContainer)
         btnBackToHome = findViewById(R.id.btnBackToHome)
 
+        // Add back button functionality
+        findViewById<Button>(R.id.backButton)?.setOnClickListener {
+            onBackPressed()
+        }
+
         // Get data from intent
         sessionId = intent.getStringExtra("sessionId") ?: ""
         userId = intent.getStringExtra("userId") ?: ""

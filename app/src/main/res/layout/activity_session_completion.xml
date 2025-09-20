@@ -11,6 +11,17 @@
         android:orientation="vertical"
         android:padding="32dp">
 
+        <!-- Back Button -->
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:text="←"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:backgroundTint="#6B4423"
+            android:layout_marginBottom="16dp" />
+
         <!-- Congratulations Section -->
         <TextView
             android:id="@+id/tvCongratulations"

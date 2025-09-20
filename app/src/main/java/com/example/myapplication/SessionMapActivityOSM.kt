@@ -103,6 +103,11 @@ class SessionMapActivityOSM : AppCompatActivity() {
         timerText = findViewById(R.id.sessionTimer)
         pauseButton = findViewById(R.id.pauseButton)
         endButton = findViewById(R.id.endSessionButton)
+
+        // Add back button functionality
+        findViewById<Button>(R.id.backButton)?.setOnClickListener {
+            onBackPressed()
+        }
     }
 
     private fun setupLocationClient() {
