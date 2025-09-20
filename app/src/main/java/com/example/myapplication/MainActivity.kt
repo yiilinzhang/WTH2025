@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
 
         // Make Home, Scan, Rewards all top-level so hamburger stays visible
         appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow),
+            setOf(R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow, R.id.nav_walkingMain),
             drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -50,6 +50,9 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.nav_slideshow -> {
                     navController.navigate(R.id.nav_slideshow); true
+                }
+                R.id.nav_walkingMain -> {
+                    navController.navigate(R.id.nav_walkingMain); true
                 }
                 else -> false
             }
