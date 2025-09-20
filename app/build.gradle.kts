@@ -1,6 +1,6 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
 }
 
 android {
@@ -48,7 +48,19 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.annotation)
+
+    // Firebase Authentication
+    implementation("com.google.firebase:firebase-auth-ktx:22.1.0")
+
+    // Optional: Firestore (for points/meetings)
+    implementation("com.google.firebase:firebase-firestore-ktx:24.6.0")
+
+    // testing the dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
 }
+//firebase
+apply(plugin = "com.google.gms.google-services")
