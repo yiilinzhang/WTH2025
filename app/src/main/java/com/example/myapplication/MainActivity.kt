@@ -29,9 +29,9 @@ class MainActivity : AppCompatActivity() {
         val navView: NavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_content_main)
 
-        // Make Home, Scan, Rewards all top-level so hamburger stays visible
+        // Make Home, Scan, Rewards, Walking, Friends all top-level so hamburger stays visible
         appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow, R.id.nav_walkingMain),
+            setOf(R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow, R.id.nav_walkingMain, R.id.nav_friends),
             drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -53,6 +53,9 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.nav_walkingMain -> {
                     navController.navigate(R.id.nav_walkingMain); true
+                }
+                R.id.nav_friends -> {
+                    navController.navigate(R.id.nav_friends); true
                 }
                 else -> false
             }
