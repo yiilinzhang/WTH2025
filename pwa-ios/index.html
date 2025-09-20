@@ -10,6 +10,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Kopi Kakis">
     <link rel="apple-touch-icon" href="icon-192.png">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -96,53 +100,58 @@
         <div class="qr-container">
             <div class="header">
                 <button onclick="showDashboard()" class="back-btn">← Back</button>
-                <h2>Join Walking Session</h2>
+                <h1 class="join-title">Join Session</h1>
             </div>
 
             <div class="qr-section">
-                <div class="qr-icon">📱</div>
-                <h3>SCAN QR CODE TO JOIN</h3>
-                <p>Look for QR codes posted in<br>coffee shops, parks, and walking trails</p>
+                <!-- Large QR Icon Card to match Android -->
+                <div class="qr-icon-card">
+                    <div class="qr-camera-icon">📸</div>
+                </div>
 
-                <button id="startCamera" class="btn-primary">Start Camera</button>
+                <button id="startCamera" class="btn-scan">SCAN QR CODE TO JOIN</button>
+
+                <p class="qr-info-text">Look for QR codes posted in<br>coffee shops, parks, and walking trails</p>
+
                 <video id="cameraVideo" autoplay playsinline style="display: none;"></video>
                 <canvas id="qrCanvas" style="display: none;"></canvas>
             </div>
 
             <div class="manual-entry">
-                <p>Or enter session code manually:</p>
-                <input type="text" id="sessionCode" placeholder="East Coast Park">
-                <button onclick="joinSession()" class="btn-secondary">Join Session</button>
+                <p class="manual-entry-text">Or enter session code manually:</p>
+                <input type="text" id="sessionCode" placeholder="East Coast Park" class="session-input">
+                <button onclick="joinSession()" class="btn-join">Join Session</button>
             </div>
         </div>
     </div>
 
     <!-- Walking Session Screen -->
     <div id="walkingScreen" class="screen hidden">
-        <div class="walking-container">
-            <div class="header">
-                <h2 id="sessionLocation">Walking Session</h2>
-                <div id="walkingTimer" class="timer">00:00:00</div>
-            </div>
+        <!-- Full Screen Map -->
+        <div id="map" class="fullscreen-map"></div>
 
-            <div class="stats-grid">
-                <div class="stat-card">
+        <!-- Top Header Overlay -->
+        <div class="walking-header-overlay">
+            <h2 id="sessionLocation">Walking Session</h2>
+            <div id="walkingTimer" class="timer">00:00:00</div>
+        </div>
+
+        <!-- Bottom Stats & Controls Overlay -->
+        <div class="walking-bottom-overlay">
+            <div class="stats-row">
+                <div class="stat-item">
                     <div class="stat-value" id="distanceValue">0.0</div>
                     <div class="stat-label">km</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-item">
                     <div class="stat-value" id="pointsValue">0</div>
                     <div class="stat-label">points</div>
                 </div>
             </div>
 
-            <div class="map-placeholder">
-                <div id="map">📍 GPS Location Tracking Active</div>
-            </div>
-
             <div class="walking-controls">
-                <button id="pauseBtn" onclick="pauseWalking()" class="btn-secondary">⏸️ Pause</button>
-                <button id="endBtn" onclick="endWalking()" class="btn-danger">🏁 End Session</button>
+                <button id="pauseBtn" onclick="pauseWalking()" class="btn-control">⏸️ Pause</button>
+                <button id="endBtn" onclick="endWalking()" class="btn-end">🏁 End Session</button>
             </div>
         </div>
     </div>
@@ -236,6 +245,9 @@
 
     <!-- QR Scanner Library -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <!-- App Script -->
     <script src="app.js"></script>

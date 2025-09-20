@@ -32,7 +32,11 @@ let walkingSession = {
     points: 0,
     timer: null,
     watchId: null,
-    locationName: ''
+    locationName: '',
+    map: null,
+    currentMarker: null,
+    pathPolyline: null,
+    pathCoordinates: []
 };
 
 // Utility Functions
@@ -252,15 +256,74 @@ async function joinSession() {
     }
 }
 
+// Map Functions
+function initializeMap() {
+    // Get user's location first
+    if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                // Initialize map centered on user's location
+                walkingSession.map = L.map('map').setView([lat, lng], 16);
+
+                // Add OpenStreetMap tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(walkingSession.map);
+
+                // Add user's current location marker
+                walkingSession.currentMarker = L.marker([lat, lng])
+                    .addTo(walkingSession.map)
+                    .bindPopup('Your current location');
+
+                // Initialize path polyline
+                walkingSession.pathPolyline = L.polyline([], {
+                    color: '#6B4423',
+                    weight: 4,
+                    opacity: 0.8
+                }).addTo(walkingSession.map);
+            },
+            (error) => {
+                console.error('Error getting location:', error);
+                // Fallback to Singapore center
+                walkingSession.map = L.map('map').setView([1.3521, 103.8198], 12);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(walkingSession.map);
+            }
+        );
+    }
+}
+
+function updateMapLocation(lat, lng) {
+    if (walkingSession.map && walkingSession.currentMarker) {
+        // Update marker position
+        walkingSession.currentMarker.setLatLng([lat, lng]);
+
+        // Add to path
+        walkingSession.pathCoordinates.push([lat, lng]);
+        walkingSession.pathPolyline.setLatLngs(walkingSession.pathCoordinates);
+
+        // Center map on current position
+        walkingSession.map.setView([lat, lng], 16);
+    }
+}
+
 // Walking Session Functions
 function startWalkingSession() {
     walkingSession.isActive = true;
     walkingSession.startTime = Date.now();
     walkingSession.distance = 0;
     walkingSession.points = 0;
+    walkingSession.pathCoordinates = [];
 
     document.getElementById('sessionLocation').textContent = walkingSession.locationName;
     showScreen('walkingScreen');
+
+    // Initialize map
+    initializeMap();
 
     // Start timer
     updateTimer();
@@ -304,6 +367,10 @@ function startLocationTracking() {
                     document.getElementById('distanceValue').textContent = walkingSession.distance.toFixed(1);
                     document.getElementById('pointsValue').textContent = walkingSession.points;
                 }
+
+                // Update map with current position
+                updateMapLocation(position.coords.latitude, position.coords.longitude);
+
                 lastPosition = position;
             },
             (error) => {
@@ -355,6 +422,11 @@ async function endWalking() {
         clearInterval(walkingSession.timer);
         navigator.geolocation.clearWatch(walkingSession.watchId);
 
+        // Clean up map
+        if (walkingSession.map) {
+            walkingSession.map.remove();
+        }
+
         // Save session to Firebase
         await saveWalkingSession();
 
@@ -366,7 +438,11 @@ async function endWalking() {
             points: 0,
             timer: null,
             watchId: null,
-            locationName: ''
+            locationName: '',
+            map: null,
+            currentMarker: null,
+            pathPolyline: null,
+            pathCoordinates: []
         };
 
         showMessage(`Session completed! You earned ${walkingSession.points} points!`);

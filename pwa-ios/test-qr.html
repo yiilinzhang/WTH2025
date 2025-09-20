@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Scanner Test</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- QR Scanner Screen Test -->
+    <div id="qrScreen" class="screen">
+        <div class="qr-container">
+            <div class="header">
+                <button onclick="alert('Back clicked')" class="back-btn">← Back</button>
+                <h1 class="join-title">Join Session</h1>
+            </div>
+
+            <div class="qr-section">
+                <!-- Large QR Icon Card to match Android -->
+                <div class="qr-icon-card">
+                    <div class="qr-camera-icon">📸</div>
+                </div>
+
+                <button id="startCamera" class="btn-scan">SCAN QR CODE TO JOIN</button>
+
+                <p class="qr-info-text">Look for QR codes posted in<br>coffee shops, parks, and walking trails</p>
+
+                <video id="cameraVideo" autoplay playsinline style="display: none;"></video>
+                <canvas id="qrCanvas" style="display: none;"></canvas>
+            </div>
+
+            <div class="manual-entry">
+                <p class="manual-entry-text">Or enter session code manually:</p>
+                <input type="text" id="sessionCode" placeholder="East Coast Park" class="session-input">
+                <button onclick="alert('Join clicked')" class="btn-join">Join Session</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

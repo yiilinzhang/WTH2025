@@ -4,6 +4,7 @@ import com.example.myapplication.models.Location
 import com.example.myapplication.models.LocationSession
 import com.example.myapplication.models.WalkSession
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.QuerySnapshot
@@ -175,34 +176,83 @@ object SessionManager {
             System.currentTimeMillis() - duration
         }
 
-        // Calculate points based on distance (10 points per km)
-        val pointsEarned = distance * 10.0
+        // Calculate base points (10 points per km)
+        val basePoints = distance * 10.0
 
-        // Create walk session data
-        val walkSession = hashMapOf(
-            "sessionId" to sessionId,
-            "locationName" to locationName,
-            "startTime" to startTime,
-            "pointsEarned" to pointsEarned,
-            "distance" to distance,
-            "duration" to duration
-        )
+        // Get group size to calculate bonus points
+        getGroupSizeForSession(sessionId, locationName) { groupSize ->
+            // Calculate group bonus: 10% per additional person (beyond the user)
+            val additionalMembers = maxOf(0, groupSize - 1)
+            val groupBonus = basePoints * (additionalMembers * 0.1)
+            val pointsEarned = basePoints + groupBonus
 
-        // Update user's walk history and points
-        db.collection("kopi")
-            .document(userId)
-            .update(
-                mapOf(
-                    "walkHistory" to FieldValue.arrayUnion(walkSession),
-                    "points" to FieldValue.increment(pointsEarned)
-                )
+            // Create walk session data
+            val walkSession = hashMapOf(
+                "sessionId" to sessionId,
+                "locationName" to locationName,
+                "startTime" to startTime,
+                "pointsEarned" to pointsEarned,
+                "distance" to distance,
+                "duration" to duration,
+                "groupSize" to groupSize,
+                "groupBonus" to groupBonus
             )
-            .addOnSuccessListener {
-                callback(true)
+
+            // Update user's walk history and points
+            db.collection("kopi")
+                .document(userId)
+                .update(
+                    mapOf(
+                        "walkHistory" to FieldValue.arrayUnion(walkSession),
+                        "points" to FieldValue.increment(pointsEarned)
+                    )
+                )
+                .addOnSuccessListener {
+                    callback(true)
+                }
+                .addOnFailureListener { e ->
+                    e.printStackTrace()
+                    callback(false)
+                }
+        }
+    }
+
+    /**
+     * Get the group size for a walking session to calculate bonus points
+     */
+    private fun getGroupSizeForSession(sessionId: String, locationName: String, callback: (Int) -> Unit) {
+        // First try to get from location-based sessions
+        val locationId = locationName.lowercase().replace(" ", "_")
+        db.collection("location")
+            .document(locationId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val sessions = document.get("sessions") as? Map<String, Map<String, Any>>
+                    val sessionData = sessions?.get(sessionId)
+                    if (sessionData != null) {
+                        val participants = sessionData["participants"] as? List<String> ?: emptyList()
+                        callback(participants.size)
+                        return@addOnSuccessListener
+                    }
+                }
+
+                // If not found in location collection, try realtime database
+                val database = FirebaseDatabase.getInstance("https://wth2025-default-rtdb.firebaseio.com/")
+                database.reference.child("sessions").child(sessionId).child("participants")
+                    .get()
+                    .addOnSuccessListener { snapshot ->
+                        val participantCount = snapshot.children.count()
+                        callback(maxOf(1, participantCount)) // At least 1 (the user)
+                    }
+                    .addOnFailureListener {
+                        // Default to 1 if can't determine group size
+                        callback(1)
+                    }
             }
-            .addOnFailureListener { e ->
-                e.printStackTrace()
-                callback(false)
+            .addOnFailureListener {
+                // Default to 1 if can't determine group size
+                callback(1)
             }
     }
 

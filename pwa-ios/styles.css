@@ -143,14 +143,34 @@ input:focus {
     cursor: pointer;
 }
 
+/* Header and Back Button - Android Style */
 .back-btn {
-    background: none;
+    background: #6B4423; /* Brown background like Android */
+    color: white;
     border: none;
-    color: #6B4423;
-    font-size: 18px;
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    font-size: 24px;
+    font-weight: bold;
     cursor: pointer;
-    margin-bottom: 10px;
-    text-align: left;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+}
+
+.back-btn:hover {
+    background: #5A3820;
+}
+
+.join-title {
+    font-size: 36px;
+    font-weight: bold;
+    color: #4A4A4A;
+    margin: 20px 0 40px 0;
+    text-align: center;
 }
 
 .logout-btn {
@@ -210,28 +230,140 @@ input:focus {
     margin-top: 10px;
 }
 
-/* QR Scanner Styles */
+/* QR Scanner Styles - Matching Android Design */
 .qr-container {
     max-width: 500px;
     margin: 0 auto;
-    text-align: center;
+    padding: 20px;
+    background: #F5E6D3; /* Kopitiam background like Android */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-.qr-section {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    margin: 20px 0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.qr-icon {
-    font-size: 64px;
+.qr-container .header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     margin-bottom: 20px;
 }
 
+.qr-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    padding: 40px 20px;
+}
+
+/* Large QR Icon Card - matching Android 140dp card */
+.qr-icon-card {
+    width: 140px;
+    height: 140px;
+    background: #D4A574; /* Golden background like Android */
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    margin-bottom: 20px;
+}
+
+.qr-camera-icon {
+    font-size: 48px;
+    color: #6B4423;
+}
+
+/* Scan Button - matching Android style */
+.btn-scan {
+    background: #8B4513; /* Brown like Android */
+    color: white;
+    padding: 18px 40px;
+    border: none;
+    border-radius: 32px; /* High radius like Android */
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    width: 100%;
+    max-width: 320px;
+    height: 64px;
+    margin-bottom: 20px;
+}
+
+.btn-scan:hover {
+    background: #7A3E12;
+}
+
+.qr-info-text {
+    color: #666666;
+    font-size: 16px;
+    line-height: 1.5;
+    text-align: center;
+    margin: 0;
+}
+
+/* Manual Entry Section */
 .manual-entry {
-    margin-top: 30px;
+    margin-top: 40px;
+    width: 100%;
+    max-width: 320px;
+}
+
+.manual-entry-text {
+    color: #8B5A3C;
+    font-size: 16px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.session-input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid #D4A574;
+    border-radius: 12px;
+    font-size: 16px;
+    background: white;
+    color: #6B4423;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.session-input:focus {
+    outline: none;
+    border-color: #8B5A3C;
+    box-shadow: 0 0 0 2px rgba(139, 90, 60, 0.2);
+}
+
+.btn-join {
+    background: #8B5A3C;
+    color: white;
+    padding: 16px 30px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    height: 56px;
+}
+
+.btn-join:hover {
+    background: #7A4E34;
+}
+
+/* Camera Video Styling */
+#cameraVideo {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    background: #000;
+}
+
+#qrCanvas {
+    display: none;
 }
 
 .manual-entry input {
@@ -246,65 +378,125 @@ input:focus {
     margin: 20px 0;
 }
 
-/* Walking Session Styles */
-.walking-container {
-    max-width: 500px;
-    margin: 0 auto;
+/* Walking Session Styles - Full Screen Layout */
+#walkingScreen {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Full Screen Map */
+.fullscreen-map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 1;
+}
+
+/* Top Header Overlay */
+.walking-header-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(107, 68, 35, 0.9);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+}
+
+.walking-header-overlay h2 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .timer {
     font-size: 24px;
     font-weight: bold;
-    color: #6B4423;
-    margin: 10px 0;
+    margin: 0;
 }
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin: 20px 0;
-}
-
-.stat-card {
-    background: white;
+/* Bottom Stats & Controls Overlay */
+.walking-bottom-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
     padding: 20px;
-    border-radius: 12px;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+
+.stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
     text-align: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    flex: 1;
 }
 
 .stat-value {
-    font-size: 28px;
+    font-size: 32px;
     font-weight: bold;
     color: #6B4423;
+    line-height: 1;
 }
 
 .stat-label {
     color: #8B5A3C;
-    font-size: 14px;
+    font-size: 16px;
     margin-top: 5px;
-}
-
-.map-placeholder {
-    background: white;
-    border-radius: 12px;
-    padding: 40px;
-    margin: 20px 0;
-    text-align: center;
-    color: #8B5A3C;
-    font-size: 18px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    font-weight: bold;
 }
 
 .walking-controls {
     display: flex;
     gap: 15px;
-    margin-top: 20px;
 }
 
-.walking-controls button {
+.btn-control {
+    background: #8B5A3C;
+    color: white;
+    border: none;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
     flex: 1;
+}
+
+.btn-end {
+    background: #CC6666;
+    color: white;
+    border: none;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    flex: 1;
+}
+
+.btn-control:hover {
+    background: #7A4E34;
+}
+
+.btn-end:hover {
+    background: #B85555;
 }
 
 /* Friends Styles */

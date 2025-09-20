@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Test - Kopi Kakis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #F5E6D3;
+            padding: 20px;
+            text-align: center;
+        }
+        .header { color: #6B4423; }
+        .btn {
+            background: #6B4423;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 300px;
+        }
+        #status {
+            color: #8B5A3C;
+            margin: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #location {
+            background: white;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 12px;
+            max-width: 400px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .metric {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .value {
+            font-weight: bold;
+            color: #6B4423;
+        }
+        #distance-test {
+            background: #fff9e6;
+            padding: 15px;
+            margin: 20px auto;
+            border-radius: 8px;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="header">☕ GPS Walking Test ☕</h1>
+    <p>Test real GPS tracking like the Android app</p>
+
+    <button class="btn" onclick="startWalkingTest()">Start Real Walking Test</button>
+    <button class="btn" onclick="stopTracking()">Stop Tracking</button>
+
+    <div id="status">Ready to test GPS</div>
+
+    <div id="location">
+        <div class="metric">📍 <strong>Latitude:</strong> <span id="lat" class="value">-</span></div>
+        <div class="metric">📍 <strong>Longitude:</strong> <span id="lng" class="value">-</span></div>
+        <div class="metric">🎯 <strong>Accuracy:</strong> <span id="accuracy" class="value">-</span> meters</div>
+        <div class="metric">🚶‍♂️ <strong>Distance:</strong> <span id="distance" class="value">0.0</span> km</div>
+        <div class="metric">⭐ <strong>Points:</strong> <span id="points" class="value">0</span></div>
+        <div class="metric">⏱️ <strong>Time:</strong> <span id="timer" class="value">00:00:00</span></div>
+    </div>
+
+    <div id="distance-test">
+        <strong>Distance Test:</strong> Start walking to see real distance calculation!
+    </div>
+
+    <script>
+        let watchId = null;
+        let lastPosition = null;
+        let totalDistance = 0;
+        let startTime = null;
+        let timerInterval = null;
+
+        function startWalkingTest() {
+            document.getElementById('status').textContent = 'Starting GPS tracking...';
+            totalDistance = 0;
+            startTime = Date.now();
+
+            // Start timer
+            timerInterval = setInterval(updateTimer, 1000);
+
+            if ('geolocation' in navigator) {
+                watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const accuracy = Math.round(position.coords.accuracy);
+
+                        // Update display
+                        document.getElementById('lat').textContent = lat.toFixed(6);
+                        document.getElementById('lng').textContent = lng.toFixed(6);
+                        document.getElementById('accuracy').textContent = accuracy;
+
+                        // Calculate distance if we have a previous position
+                        if (lastPosition) {
+                            const distance = calculateDistance(
+                                lastPosition.coords.latitude,
+                                lastPosition.coords.longitude,
+                                lat,
+                                lng
+                            );
+
+                            totalDistance += distance;
+                            const points = Math.floor(totalDistance * 4); // 4 points per km
+
+                            document.getElementById('distance').textContent = totalDistance.toFixed(3);
+                            document.getElementById('points').textContent = points;
+
+                            document.getElementById('status').textContent =
+                                `GPS active - ${totalDistance > 0.001 ? 'Movement detected!' : 'Waiting for movement...'}`;
+                        } else {
+                            document.getElementById('status').textContent = 'GPS locked - Start walking!';
+                        }
+
+                        lastPosition = position;
+                    },
+                    (error) => {
+                        let errorMsg = '';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMsg = 'Location permission denied. Check iPhone Settings → Privacy → Location Services → Safari';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMsg = 'Location unavailable. Make sure you\'re outdoors or near windows.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMsg = 'Location timeout. Trying again...';
+                                break;
+                            default:
+                                errorMsg = 'Unknown location error: ' + error.message;
+                                break;
+                        }
+                        document.getElementById('status').textContent = errorMsg;
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 1000,
+                        timeout: 10000
+                    }
+                );
+            } else {
+                document.getElementById('status').textContent = 'GPS not supported on this device';
+            }
+        }
+
+        function stopTracking() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            document.getElementById('status').textContent =
+                `Session ended. Distance: ${totalDistance.toFixed(3)} km, Points: ${Math.floor(totalDistance * 4)}`;
+        }
+
+        function updateTimer() {
+            if (startTime) {
+                const elapsed = Date.now() - startTime;
+                const hours = Math.floor(elapsed / 3600000);
+                const minutes = Math.floor((elapsed % 3600000) / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+
+                document.getElementById('timer').textContent =
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a =
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // Auto-refresh instructions
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('status').innerHTML =
+                'Ready to test GPS<br><small>Allow location permission when prompted</small>';
+        });
+    </script>
+</body>
+</html>

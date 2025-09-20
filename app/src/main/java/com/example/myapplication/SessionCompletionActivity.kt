@@ -30,6 +30,7 @@ class SessionCompletionActivity : AppCompatActivity() {
     private var distance: Double = 0.0
     private var duration: Long = 0L
     private var points: Int = 0
+    private var groupBonusInfo: Int = 0
     private lateinit var db: FirebaseFirestore
 
     private val addedFriends = mutableSetOf<String>()
@@ -57,16 +58,10 @@ class SessionCompletionActivity : AppCompatActivity() {
         distance = intent.getDoubleExtra("distance", 0.0)
         duration = intent.getLongExtra("duration", 0L)
 
-        // Calculate points (1 point per 100 meters)
-        points = (distance / 100).toInt()
-
         // Initialize Firebase Firestore
         db = FirebaseFirestore.getInstance()
 
-        // Display stats
-        displayStats()
-
-        // Load participants
+        // Load participants first to calculate points with group bonus
         loadParticipants()
 
         // Setup button listeners
@@ -74,7 +69,12 @@ class SessionCompletionActivity : AppCompatActivity() {
     }
 
     private fun displayStats() {
-        tvPointsEarned.text = "You've earned $points points!"
+        val pointsText = if (groupBonusInfo > 0) {
+            "You've earned $points points! (+${groupBonusInfo * 10}% group bonus)"
+        } else {
+            "You've earned $points points!"
+        }
+        tvPointsEarned.text = pointsText
         tvDistanceValue.text = String.format("%.2f km", distance / 1000)
 
         val minutes = duration / 60000
@@ -92,7 +92,9 @@ class SessionCompletionActivity : AppCompatActivity() {
 
     private fun loadParticipants() {
         if (sessionId.isEmpty()) {
-            // Mock mode - show sample participants
+            // Mock mode - show sample participants and calculate points with group bonus
+            val groupSize = 3 // Mock group of 3 people
+            calculatePointsWithGroupBonus(groupSize)
             addParticipantRow("John Walker", "john123", true)
             addParticipantRow("Sarah Runner", "sarah456", false)
             addParticipantRow("Mike Jogger", "mike789", false)
@@ -106,6 +108,7 @@ class SessionCompletionActivity : AppCompatActivity() {
             .addOnSuccessListener { documents ->
                 friendsListContainer.removeAllViews()
                 var hasParticipants = false
+                var totalParticipants = 1 // Include the current user
 
                 for (document in documents) {
                     val sessionMap = document.get("sessionID") as? Map<String, String> ?: continue
@@ -115,9 +118,13 @@ class SessionCompletionActivity : AppCompatActivity() {
                             val name = "Walker ${participantId.take(4)}"
                             addParticipantRow(name, participantId, false)
                             hasParticipants = true
+                            totalParticipants++
                         }
                     }
                 }
+
+                // Calculate points with group bonus based on actual participant count
+                calculatePointsWithGroupBonus(totalParticipants)
 
                 if (!hasParticipants) {
                     val noParticipantsText = TextView(this@SessionCompletionActivity).apply {
@@ -132,9 +139,30 @@ class SessionCompletionActivity : AppCompatActivity() {
                 }
             }
             .addOnFailureListener {
+                // Default to solo walk if can't load participants
+                calculatePointsWithGroupBonus(1)
                 Toast.makeText(this@SessionCompletionActivity,
                     "Failed to load participants", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun calculatePointsWithGroupBonus(groupSize: Int) {
+        // Calculate base points (10 points per km, same as SessionManager)
+        val basePoints = (distance * 10.0 / 1000.0) // distance is in meters, convert to km
+
+        // Calculate group bonus: 10% per additional person (beyond the user)
+        val additionalMembers = maxOf(0, groupSize - 1)
+        val groupBonus = basePoints * (additionalMembers * 0.1)
+        val totalPoints = basePoints + groupBonus
+
+        points = totalPoints.toInt()
+        groupBonusInfo = additionalMembers // Store for display
+
+        // Display stats after calculating points
+        displayStats()
+
+        // Log for debugging
+        android.util.Log.d("SessionCompletion", "Group size: $groupSize, Base points: $basePoints, Group bonus: $groupBonus, Total points: $points")
     }
 
     private fun addParticipantRow(name: String, participantId: String, isAlreadyFriend: Boolean) {
