@@ -111,7 +111,7 @@ class SessionCompletionActivity : AppCompatActivity() {
                             gravity = Gravity.CENTER
                             setPadding(24, 48, 24, 48)
                             textSize = 20f
-                            setTextColor(Color.parseColor("#7A8B9A"))
+                            setTextColor(Color.parseColor("#9B7B5B"))
                             setBackgroundColor(Color.WHITE)
                         }
                         friendsListContainer.addView(noParticipantsText)
@@ -141,7 +141,7 @@ class SessionCompletionActivity : AppCompatActivity() {
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     1
                 )
-                setBackgroundColor(Color.parseColor("#E8F5F2"))
+                setBackgroundColor(Color.parseColor("#D4A574"))
             }
         }
 
@@ -157,13 +157,13 @@ class SessionCompletionActivity : AppCompatActivity() {
             ).apply {
                 setMargins(0, 0, 16, 0)
             }
-            background = createCircleDrawable(Color.parseColor("#67AB9F"))
+            background = createCircleDrawable(Color.parseColor("#8B5A3C"))
         }
 
         val nameText = TextView(this).apply {
             text = name
             textSize = 22f
-            setTextColor(Color.parseColor("#2C3E50"))
+            setTextColor(Color.parseColor("#3E2723"))
             layoutParams = LinearLayout.LayoutParams(
                 0,
                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -192,18 +192,18 @@ class SessionCompletionActivity : AppCompatActivity() {
             if (isAlreadyFriend || addedFriends.contains(participantId)) {
                 text = "✓ Friends"
                 isEnabled = false
-                setBackgroundColor(Color.parseColor("#D0E8E0"))
-                setTextColor(Color.parseColor("#67AB9F"))
+                setBackgroundColor(Color.parseColor("#E8D4C1"))
+                setTextColor(Color.parseColor("#6B4423"))
             } else {
                 text = "+ Add"
-                setBackgroundColor(Color.parseColor("#67AB9F"))
+                setBackgroundColor(Color.parseColor("#8B5A3C"))
                 setTextColor(Color.WHITE)
 
                 setOnClickListener {
                     addFriend(participantId, name)
                     text = "✓ Added"
                     isEnabled = false
-                    setBackgroundColor(Color.parseColor("#67AB9F"))
+                    setBackgroundColor(Color.parseColor("#8B5A3C"))
                     setTextColor(Color.WHITE)
                 }
             }
@@ -221,7 +221,7 @@ class SessionCompletionActivity : AppCompatActivity() {
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     1
                 )
-                setBackgroundColor(Color.parseColor("#E8F5F2"))
+                setBackgroundColor(Color.parseColor("#D4A574"))
             }
             friendsListContainer.addView(divider)
         }

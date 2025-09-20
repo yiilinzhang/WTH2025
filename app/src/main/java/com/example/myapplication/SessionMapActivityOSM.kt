@@ -482,9 +482,9 @@ class SessionMapActivityOSM : AppCompatActivity() {
         }
         canvas.drawCircle(size / 2f, size / 2f, size / 2f, borderPaint)
 
-        // Draw colored circle (profile background)
+        // Draw colored circle (profile background - kopi brown)
         val backgroundPaint = Paint().apply {
-            color = Color.parseColor("#4A90A4")
+            color = Color.parseColor("#6B4423")
             style = Paint.Style.FILL
             isAntiAlias = true
         }
@@ -510,13 +510,13 @@ class SessionMapActivityOSM : AppCompatActivity() {
 
         canvas.drawText(initial, size / 2f, y, textPaint)
 
-        // Optional: Add a shadow/glow effect
+        // Optional: Add a shadow/glow effect (condensed milk cream color)
         val glowPaint = Paint().apply {
-            color = Color.parseColor("#67AB9F")
+            color = Color.parseColor("#F5E6D3")
             style = Paint.Style.STROKE
             strokeWidth = 3f
             isAntiAlias = true
-            alpha = 128
+            alpha = 180
         }
         canvas.drawCircle(size / 2f, size / 2f, (size / 2f) - 2, glowPaint)
 
