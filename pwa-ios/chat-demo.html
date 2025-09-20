@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Safety Demo - Kopi Kakis</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        .demo-header {
+            background: #8B5A3C;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-arrow {
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .demo-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .demo-info {
+            background: #FFF8F0;
+            padding: 15px;
+            border-bottom: 1px solid #D4A574;
+        }
+
+        .demo-info h3 {
+            color: #6B4423;
+            margin: 0 0 10px 0;
+        }
+
+        .demo-info p {
+            color: #666;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .test-buttons {
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .test-btn {
+            background: #F5E6D3;
+            border: 2px solid #D4A574;
+            color: #6B4423;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .test-btn:hover {
+            background: #8B5A3C;
+            color: white;
+            border-color: #8B5A3C;
+        }
+
+        .chat-header {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid #E0E0E0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #8B5A3C;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .chat-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .chat-status {
+            font-size: 12px;
+            color: #4CAF50;
+        }
+
+        #chatMessages {
+            height: 400px;
+            max-height: 50vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-screen">
+        <div class="demo-header">
+            <span class="back-arrow" onclick="window.history.back()">←</span>
+            <h2>Message Safety Demo</h2>
+        </div>
+
+        <div class="demo-info">
+            <h3>🛡️ AI-Powered Message Protection</h3>
+            <p>• Detects credit cards, SSNs, passwords, and personal info</p>
+            <p>• Blocks scam messages automatically</p>
+            <p>• Warns you before sharing sensitive data</p>
+        </div>
+
+        <div class="chat-header">
+            <div class="chat-avatar">JW</div>
+            <div>
+                <div class="chat-name">John Walker (Demo)</div>
+                <div class="chat-status">• Testing message safety</div>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will appear here -->
+            <div class="message-bubble received">
+                <div>Hey! Want to test the message safety system?</div>
+                <div class="message-time">10:30 AM</div>
+            </div>
+        </div>
+
+        <div class="test-buttons">
+            <button class="test-btn" onclick="insertTestMessage('normal')">Normal Message</button>
+            <button class="test-btn" onclick="insertTestMessage('creditcard')">Credit Card</button>
+            <button class="test-btn" onclick="insertTestMessage('ssn')">SSN</button>
+            <button class="test-btn" onclick="insertTestMessage('password')">Password</button>
+            <button class="test-btn" onclick="insertTestMessage('phone')">Phone Number</button>
+            <button class="test-btn" onclick="insertTestMessage('scam')">Scam Message</button>
+            <button class="test-btn" onclick="insertTestMessage('crypto')">Crypto Address</button>
+        </div>
+
+        <div class="chat-input-container">
+            <textarea
+                class="chat-input"
+                id="messageInput"
+                placeholder="Type a message..."
+                rows="1"
+            ></textarea>
+            <button class="chat-send-btn" id="sendButton" onclick="sendMessage()">
+                ➤
+            </button>
+        </div>
+    </div>
+
+    <!-- Include the message safety module -->
+    <script src="message-safety.js"></script>
+
+    <script>
+        // Test messages for different scenarios
+        const testMessages = {
+            normal: "Let's meet at East Coast Park at 3pm!",
+            creditcard: "My card number is 4532-1234-5678-9012, can you save it?",
+            ssn: "My SSN is 123-45-6789 for the registration",
+            password: "My password is SuperSecret123! don't share it",
+            phone: "Call me at 415-555-0123 when you arrive",
+            scam: "URGENT! Transfer money immediately to this account or your account will be suspended! Act now - limited time offer!",
+            crypto: "Send Bitcoin to 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa for payment"
+        };
+
+        // Insert test message into input
+        function insertTestMessage(type) {
+            const input = document.getElementById('messageInput');
+            input.value = testMessages[type];
+            input.focus();
+
+            // Auto-adjust textarea height
+            input.style.height = 'auto';
+            input.style.height = input.scrollHeight + 'px';
+        }
+
+        // Send message with safety check
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Disable send button during processing
+            const sendBtn = document.getElementById('sendButton');
+            sendBtn.disabled = true;
+
+            // Use the message safety module to process the message
+            const wasSent = await messageSafety.processMessage(message, async (safeMessage) => {
+                // This callback is called only if the message is safe to send
+                addMessage(safeMessage, 'sent');
+
+                // Simulate a response after 1 second
+                setTimeout(() => {
+                    addMessage("Thanks for testing the message safety system! Try sending sensitive info to see the protection in action.", 'received');
+                }, 1000);
+            });
+
+            if (wasSent) {
+                // Clear input only if message was sent
+                input.value = '';
+                input.style.height = 'auto';
+            }
+
+            // Re-enable send button
+            sendBtn.disabled = false;
+            input.focus();
+        }
+
+        // Add message to chat
+        function addMessage(text, type) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message-bubble ${type}`;
+
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            messageDiv.innerHTML = `
+                <div>${text}</div>
+                <div class="message-time">${time}</div>
+            `;
+
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Handle enter key in textarea
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Auto-resize textarea as user types
+        document.getElementById('messageInput').addEventListener('input', (e) => {
+            e.target.style.height = 'auto';
+            e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+        });
+
+        // Add initial demo messages
+        setTimeout(() => {
+            addMessage("Try clicking the test buttons above to insert different types of sensitive messages!", 'received');
+        }, 500);
+    </script>
+</body>
+</html>

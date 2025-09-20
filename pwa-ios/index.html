@@ -64,6 +64,22 @@
                 <div class="logo-small">☕ ☕ ☕</div>
                 <h2>Kopi Kakis Walking Club</h2>
                 <p class="tagline">Jalan-jalan with your friends!</p>
+                <div class="language-selector">
+                    <div class="current-language" onclick="toggleLanguageMenu()" id="currentLangBtn">
+                        <span class="flag-display">🇬🇧</span>
+                    </div>
+                    <div class="language-dropdown hidden" id="languageDropdown">
+                        <div class="lang-option" onclick="setLanguage('en')" data-lang="en">
+                            <span class="flag-icon">🇬🇧</span> English
+                        </div>
+                        <div class="lang-option" onclick="setLanguage('zh')" data-lang="zh">
+                            <span class="flag-icon">🇨🇳</span> 中文
+                        </div>
+                        <div class="lang-option" onclick="setLanguage('ms')" data-lang="ms">
+                            <span class="flag-icon">🇲🇾</span> Bahasa
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <button id="joinSessionBtn" class="btn-large">
@@ -140,6 +156,19 @@
             <div class="session-info">
                 <h3 id="sessionLocationDisplay">East Coast Park</h3>
                 <p>When others scan this same code, they'll automatically join your walking group!</p>
+
+                <!-- Participants List -->
+                <div id="participantsList" style="margin-top: 20px; min-height: 60px;">
+                    <div id="participantsLoading" style="text-align: center; color: #8B5A3C; padding: 10px;">
+                        <div style="font-size: 14px; margin-bottom: 10px;">Waiting for others to join...</div>
+                    </div>
+                    <div id="participantsDisplay" style="display: none;">
+                        <h4 style="color: #6B4423; margin-bottom: 10px;">Joined Participants:</h4>
+                        <div id="participantsNames" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            <!-- Participant badges will appear here -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="walking-options">
@@ -422,6 +451,25 @@
         </div>
     </div>
 
+    <!-- Chat Screen -->
+    <div id="chatScreen" class="screen hidden">
+        <div class="chat-container">
+            <div class="chat-header">
+                <button onclick="showFriends()" class="back-btn">←</button>
+                <h3 id="chatFriendName">Chat</h3>
+            </div>
+
+            <div id="chatMessages" class="chat-messages">
+                <!-- Messages will load here -->
+            </div>
+
+            <div class="chat-input-container">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Type a message...">
+                <button onclick="sendMessage()" class="send-btn">Send</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Create Walk Screen -->
     <div id="createWalkScreen" class="screen hidden">
         <div class="create-walk-container">
@@ -492,6 +540,9 @@
 
     <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Message Safety Module -->
+    <script src="message-safety.js"></script>
 
     <!-- App Script -->
     <script src="app.js"></script>
