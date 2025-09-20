@@ -84,22 +84,55 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btn_join_walking_session" />
 
-    <!-- Friends Button -->
-    <Button
-        android:id="@+id/btn_friends"
+    <!-- Three buttons in a row -->
+    <LinearLayout
+        android:id="@+id/buttons_container"
         android:layout_width="0dp"
-        android:layout_height="72dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
         android:layout_marginTop="32dp"
-        android:text="👥 MY KOPI KAKIS"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:backgroundTint="#8B5A3C"
-        android:textColor="@android:color/white"
+        android:orientation="vertical"
+        android:spacing="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_description" />
+        app:layout_constraintTop_toBottomOf="@id/text_description">
+
+        <!-- Friends Button -->
+        <Button
+            android:id="@+id/btn_friends"
+            android:layout_width="match_parent"
+            android:layout_height="68dp"
+            android:text="👥 MY KOPI KAKIS"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:backgroundTint="#8B5A3C"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Leaderboard Button -->
+        <Button
+            android:id="@+id/btn_leaderboard"
+            android:layout_width="match_parent"
+            android:layout_height="68dp"
+            android:text="🏆 LEADERBOARD"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:backgroundTint="#D4A574"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Rewards Button -->
+        <Button
+            android:id="@+id/btn_rewards"
+            android:layout_width="match_parent"
+            android:layout_height="68dp"
+            android:text="🎁 REWARDS"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:backgroundTint="#9B7B5B"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
 
     <!-- Bottom decoration -->
     <TextView

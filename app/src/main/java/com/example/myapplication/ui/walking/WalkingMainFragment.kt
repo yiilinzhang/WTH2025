@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import com.example.myapplication.SessionStartActivity
 import com.example.myapplication.databinding.FragmentWalkingMainBinding
 
@@ -30,10 +31,22 @@ class WalkingMainFragment : Fragment() {
             startActivity(intent)
         }
 
-        // Setup friends button if present
-        binding.btnFriends?.setOnClickListener {
-            // Navigate to friends through the nav drawer
-            requireActivity().onBackPressed()
+        // Setup friends button
+        binding.btnFriends.setOnClickListener {
+            val intent = Intent(requireContext(), com.example.myapplication.FriendsListActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Setup leaderboard button - navigates to HomeFragment (which has the leaderboard)
+        binding.btnLeaderboard.setOnClickListener {
+            val navController = requireActivity().findNavController(com.example.myapplication.R.id.nav_host_fragment_content_main)
+            navController.navigate(com.example.myapplication.R.id.nav_home)
+        }
+
+        // Setup rewards button - navigates to rewards/slideshow fragment
+        binding.btnRewards.setOnClickListener {
+            val navController = requireActivity().findNavController(com.example.myapplication.R.id.nav_host_fragment_content_main)
+            navController.navigate(com.example.myapplication.R.id.nav_slideshow)
         }
 
         return root

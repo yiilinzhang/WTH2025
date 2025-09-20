@@ -30,6 +30,14 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Navigation buttons
+        binding.btnBack.setOnClickListener {
+            findNavController().popBackStack()
+        }
+        binding.btnHome.setOnClickListener {
+            findNavController().navigate(R.id.nav_walkingMain)
+        }
+
         // RecyclerView must have a LayoutManager + Adapter
         binding.rvCheckins.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
