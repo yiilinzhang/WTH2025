@@ -56,6 +56,10 @@ dependencies {
     // Optional: Firestore (for points/meetings)
     implementation("com.google.firebase:firebase-firestore-ktx:24.6.0")
 
+    implementation("com.google.firebase:firebase-database-ktx:21.0.0")
+    implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
+
+
     // testing the dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

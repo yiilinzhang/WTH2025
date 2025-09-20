@@ -1,24 +1,42 @@
 package com.example.myapplication.data
 
-import com.example.myapplication.data.model.LoggedInUser
-import java.io.IOException
+import com.google.firebase.database.FirebaseDatabase
 
-/**
- * Class that handles authentication w/ login credentials and retrieves user information.
- */
 class LoginDataSource {
 
-    fun login(username: String, password: String): Result<LoggedInUser> {
-        try {
-            // TODO: handle loggedInUser authentication
-            val fakeUser = LoggedInUser(java.util.UUID.randomUUID().toString(), "Jane Doe")
-            return Result.Success(fakeUser)
-        } catch (e: Throwable) {
-            return Result.Error(IOException("Error logging in", e))
-        }
+    private val database = FirebaseDatabase.getInstance().reference
+
+    fun login(username: String, password: String, callback: (Result<LoggedInUserView>) -> Unit) {
+        database.child("users").child(username).get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    val storedPassword = snapshot.child("password").getValue(String::class.java)
+                    if (storedPassword == password) {
+                        callback(Result.Success(LoggedInUserView(displayName = username)))
+                    } else {
+                        callback(Result.Error(Exception("Incorrect password")))
+                    }
+                } else {
+                    callback(Result.Error(Exception("User not found")))
+                }
+            }
+            .addOnFailureListener { callback(Result.Error(it)) }
     }
 
-    fun logout() {
-        // TODO: revoke authentication
+    fun signup(username: String, password: String, callback: (Result<LoggedInUserView>) -> Unit) {
+        database.child("users").child(username).get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    callback(Result.Error(Exception("User already exists")))
+                } else {
+                    val userMap = mapOf("password" to password)
+                    database.child("users").child(username).setValue(userMap)
+                        .addOnSuccessListener {
+                            callback(Result.Success(LoggedInUserView(displayName = username)))
+                        }
+                        .addOnFailureListener { callback(Result.Error(it)) }
+                }
+            }
+            .addOnFailureListener { callback(Result.Error(it)) }
     }
 }

@@ -1,9 +1,8 @@
 package com.example.myapplication.ui.login
 
-/**
- * Authentication result : success (user details) or error message.
- */
+import com.example.myapplication.data.LoggedInUserView
+
 data class LoginResult(
     val success: LoggedInUserView? = null,
-    val error: Int? = null
+    val error: String? = null
 )

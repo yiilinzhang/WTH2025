@@ -1,10 +1,7 @@
 package com.example.myapplication.ui.login
 
-/**
- * Data validation state of the login form.
- */
 data class LoginFormState(
-    val usernameError: Int? = null,
-    val passwordError: Int? = null,
+    val usernameError: String? = null,
+    val passwordError: String? = null,
     val isDataValid: Boolean = false
 )

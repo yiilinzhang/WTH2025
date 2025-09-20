@@ -3,53 +3,43 @@ package com.example.myapplication.ui.login
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import android.util.Patterns
+import com.example.myapplication.data.LoggedInUserView
 import com.example.myapplication.data.LoginRepository
 import com.example.myapplication.data.Result
 
-import com.example.myapplication.R
+class LoginViewModel(private val repository: LoginRepository) : ViewModel() {
 
-class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
-
-    private val _loginForm = MutableLiveData<LoginFormState>()
-    val loginFormState: LiveData<LoginFormState> = _loginForm
+    private val _loginFormState = MutableLiveData<LoginFormState>()
+    val loginFormState: LiveData<LoginFormState> = _loginFormState
 
     private val _loginResult = MutableLiveData<LoginResult>()
     val loginResult: LiveData<LoginResult> = _loginResult
 
-    fun login(username: String, password: String) {
-        // can be launched in a separate asynchronous job
-        val result = loginRepository.login(username, password)
-
-        if (result is Result.Success) {
-            _loginResult.value =
-                LoginResult(success = LoggedInUserView(displayName = result.data.displayName))
-        } else {
-            _loginResult.value = LoginResult(error = R.string.login_failed)
-        }
-    }
-
     fun loginDataChanged(username: String, password: String) {
-        if (!isUserNameValid(username)) {
-            _loginForm.value = LoginFormState(usernameError = R.string.invalid_username)
-        } else if (!isPasswordValid(password)) {
-            _loginForm.value = LoginFormState(passwordError = R.string.invalid_password)
-        } else {
-            _loginForm.value = LoginFormState(isDataValid = true)
+        val usernameValid = username.isNotBlank()
+        val passwordValid = password.length > 5
+        _loginFormState.value = LoginFormState(
+            usernameError = if (!usernameValid) "Invalid username" else null,
+            passwordError = if (!passwordValid) "Password too short" else null,
+            isDataValid = usernameValid && passwordValid
+        )
+    }
+
+    fun login(username: String, password: String) {
+        repository.login(username, password) { result ->
+            when (result) {
+                is Result.Success -> _loginResult.postValue(LoginResult(success = result.data))
+                is Result.Error -> _loginResult.postValue(LoginResult(error = result.exception.message))
+            }
         }
     }
 
-    // A placeholder username validation check
-    private fun isUserNameValid(username: String): Boolean {
-        return if (username.contains('@')) {
-            Patterns.EMAIL_ADDRESS.matcher(username).matches()
-        } else {
-            username.isNotBlank()
+    fun signup(username: String, password: String) {
+        repository.signup(username, password) { result ->
+            when (result) {
+                is Result.Success -> _loginResult.postValue(LoginResult(success = result.data))
+                is Result.Error -> _loginResult.postValue(LoginResult(error = result.exception.message))
+            }
         }
-    }
-
-    // A placeholder password validation check
-    private fun isPasswordValid(password: String): Boolean {
-        return password.length > 5
     }
 }
