@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test QR Codes for Walking App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5dc;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #8b4513;
+            text-align: center;
+        }
+        .qr-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #d2b48c;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .qr-code {
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            display: inline-block;
+            border: 1px solid #ddd;
+        }
+        .session-id {
+            font-size: 24px;
+            font-weight: bold;
+            color: #8b4513;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f5f5dc;
+            border-radius: 5px;
+        }
+        .instructions {
+            background: #fff9e6;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #d2b48c;
+            text-align: left;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #8b4513;
+        }
+        .instructions ol {
+            margin: 10px 0;
+        }
+        .instructions li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>☕ Walking Session Test QR Codes</h1>
+
+        <div class="instructions">
+            <h3>How to use these QR codes:</h3>
+            <ol>
+                <li><strong>On Computer:</strong> Open this HTML file in a browser</li>
+                <li><strong>On Emulator:</strong> In your app, click "Scan QR Code"</li>
+                <li><strong>Camera won't work:</strong> Since emulator camera shows a fake scene, you can:
+                    <ul>
+                        <li>Type the Session ID manually in your app</li>
+                        <li>Or modify SessionStartActivity to auto-fill a test code</li>
+                    </ul>
+                </li>
+                <li><strong>Alternative:</strong> One person creates a session, others type the code</li>
+            </ol>
+        </div>
+
+        <div class="qr-section">
+            <h2>Test Session 1</h2>
+            <p>Active Walking Session - Central Park</p>
+            <div class="session-id">SESSION_WALK01</div>
+            <div id="qrcode1" class="qr-code"></div>
+        </div>
+
+        <div class="qr-section">
+            <h2>Test Session 2</h2>
+            <p>Group Walk - Coffee Trail</p>
+            <div class="session-id">SESSION_COFFEE</div>
+            <div id="qrcode2" class="qr-code"></div>
+        </div>
+
+        <div class="qr-section">
+            <h2>Test Session 3</h2>
+            <p>Morning Walk Session</p>
+            <div class="session-id">SESSION_TEST99</div>
+            <div id="qrcode3" class="qr-code"></div>
+        </div>
+    </div>
+
+    <script>
+        // Generate QR codes
+        new QRCode(document.getElementById("qrcode1"), {
+            text: "SESSION_WALK01",
+            width: 200,
+            height: 200,
+            colorDark: "#8b4513",
+            colorLight: "#ffffff",
+        });
+
+        new QRCode(document.getElementById("qrcode2"), {
+            text: "SESSION_COFFEE",
+            width: 200,
+            height: 200,
+            colorDark: "#8b4513",
+            colorLight: "#ffffff",
+        });
+
+        new QRCode(document.getElementById("qrcode3"), {
+            text: "SESSION_TEST99",
+            width: 200,
+            height: 200,
+            colorDark: "#8b4513",
+            colorLight: "#ffffff",
+        });
+    </script>
+</body>
+</html>
