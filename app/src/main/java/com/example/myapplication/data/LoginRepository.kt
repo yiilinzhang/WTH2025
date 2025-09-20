@@ -2,11 +2,19 @@ package com.example.myapplication.data
 
 class LoginRepository(private val dataSource: LoginDataSource) {
 
-    fun login(username: String, password: String, callback: (Result<LoggedInUserView>) -> Unit) {
-        dataSource.login(username, password, callback)
+    suspend fun login(email: String, password: String): Result<LoggedInUserView> {
+        return dataSource.login(email, password)
     }
 
-    fun signup(username: String, password: String, callback: (Result<LoggedInUserView>) -> Unit) {
-        dataSource.signup(username, password, callback)
+    suspend fun signup(email: String, password: String): Result<LoggedInUserView> {
+        return dataSource.signup(email, password)
+    }
+
+    fun logout() {
+        dataSource.logout()
+    }
+
+    fun isLoggedIn(): Boolean {
+        return dataSource.getCurrentUser() != null
     }
 }

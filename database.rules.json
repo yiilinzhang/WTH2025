@@ -1,0 +1,60 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid || auth != null",
+        ".write": "$uid === auth.uid",
+        "totalPoints": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "completedSessions": {
+          "$sessionId": {
+            ".validate": "newData.hasChildren(['sessionId', 'userId', 'distance', 'duration', 'points', 'completedAt'])"
+          }
+        }
+      }
+    },
+    "sessions": {
+      "$sessionId": {
+        ".read": true,
+        ".write": "auth != null",
+        "participants": {
+          "$uid": {
+            ".write": "$uid === auth.uid || !data.exists()"
+          }
+        },
+        "status": {
+          ".validate": "newData.isString() && (newData.val() === 'active' || newData.val() === 'completed' || newData.val() === 'pending')"
+        }
+      }
+    },
+    "recentSessions": {
+      ".read": true,
+      "$sessionId": {
+        ".write": "auth != null",
+        ".validate": "newData.hasChildren(['sessionId', 'userId', 'userName', 'distance', 'duration', 'points', 'completedAt'])",
+        "completedAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "points": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        }
+      }
+    },
+    "leaderboard": {
+      ".read": true,
+      "$uid": {
+        ".write": "$uid === auth.uid || auth != null",
+        "totalPoints": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "sessionsCompleted": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "lastUpdated": {
+          ".validate": "newData.isNumber()"
+        }
+      }
+    }
+  }
+}

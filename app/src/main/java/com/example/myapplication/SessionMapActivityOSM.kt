@@ -40,6 +40,7 @@ class SessionMapActivityOSM : AppCompatActivity() {
     private lateinit var sessionRef: DatabaseReference
     private lateinit var myLocationOverlay: MyLocationNewOverlay
     private var userLocationMarker: Marker? = null
+    private var locationName: String? = null
 
     // UI Elements
     private lateinit var distanceText: TextView
@@ -81,10 +82,25 @@ class SessionMapActivityOSM : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance("https://wth2025-default-rtdb.firebaseio.com/")
 
-        sessionId = intent.getStringExtra("SESSION_ID") ?: ""
-        if (sessionId.isEmpty()) {
-            finish()
-            return
+        // Get session ID from intent - accept both key names for compatibility
+        var originalSessionId = intent.getStringExtra("SESSION_ID") ?: intent.getStringExtra("sessionId") ?: ""
+
+        // Extract location name from session ID if it's a location name
+        locationName = when (originalSessionId) {
+            "East Coast Park" -> "East Coast Park"
+            "Botanic Garden" -> "Botanic Gardens"
+            "Botanic Gardens" -> "Botanic Gardens"
+            "Bishan Park" -> "Bishan Park"
+            "MacRitchie Reservoir" -> "MacRitchie Reservoir"
+            else -> null
+        }
+
+        // For test sessions or solo walks, generate a session ID if needed
+        if (originalSessionId.isEmpty() || locationName != null) {
+            sessionId = "walk_${System.currentTimeMillis()}"
+            android.util.Log.d("SessionMap", "Generated session ID for walk at ${locationName ?: "unknown location"}: $sessionId")
+        } else {
+            sessionId = originalSessionId
         }
 
         sessionRef = database.reference.child("sessions").child(sessionId)
@@ -383,17 +399,30 @@ class SessionMapActivityOSM : AppCompatActivity() {
     }
 
     private fun endSession() {
+        // Get the current user ID (use actual Firebase user ID if available)
+        val currentUserId = auth.currentUser?.uid ?: ""
+
         // If in mock mode, use the actual values from the map screen
         if (MockDataManager.USE_MOCK_DATA || sessionId.isEmpty()) {
             // Calculate the actual elapsed time
             val actualDuration = System.currentTimeMillis() - startTime
 
+            // Generate a unique session ID for this walk if empty
+            val finalSessionId = if (sessionId.isEmpty()) {
+                "walk_${System.currentTimeMillis()}"
+            } else {
+                sessionId
+            }
+
             // Navigate directly to completion screen with actual tracked data
             val intent = Intent(this, SessionCompletionActivity::class.java).apply {
-                putExtra("sessionId", sessionId)
-                putExtra("userId", "mock_user")
+                putExtra("sessionId", finalSessionId)
+                putExtra("userId", currentUserId)  // Use actual Firebase user ID
                 putExtra("distance", totalDistance)  // Use actual distance from map
                 putExtra("duration", actualDuration)  // Use actual duration
+                locationName?.let { putExtra("locationName", it) }  // Add location name if available
+                // Add flag to prevent returning here
+                flags = Intent.FLAG_ACTIVITY_NO_HISTORY
             }
             startActivity(intent)
             finish()
@@ -416,6 +445,9 @@ class SessionMapActivityOSM : AppCompatActivity() {
                         putExtra("userId", currentUserId)
                         putExtra("distance", totalDistance)
                         putExtra("duration", System.currentTimeMillis() - startTime)
+                        locationName?.let { putExtra("locationName", it) }  // Add location name if available
+                        // Add flag to prevent returning here
+                        flags = Intent.FLAG_ACTIVITY_NO_HISTORY
                     }
                     startActivity(intent)
                     finish()
@@ -428,6 +460,9 @@ class SessionMapActivityOSM : AppCompatActivity() {
                         putExtra("userId", currentUserId)
                         putExtra("distance", totalDistance)
                         putExtra("duration", System.currentTimeMillis() - startTime)
+                        locationName?.let { putExtra("locationName", it) }  // Add location name if available
+                        // Add flag to prevent returning here
+                        flags = Intent.FLAG_ACTIVITY_NO_HISTORY
                     }
                     startActivity(intent)
                     finish()

@@ -8,9 +8,13 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.google.firebase.database.*
 import android.util.TypedValue
 import android.graphics.drawable.GradientDrawable
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FieldValue
+import com.example.myapplication.models.WalkSession
+import com.example.myapplication.util.DatabaseInitializer
 
 class SessionCompletionActivity : AppCompatActivity() {
 
@@ -26,7 +30,7 @@ class SessionCompletionActivity : AppCompatActivity() {
     private var distance: Double = 0.0
     private var duration: Long = 0L
     private var points: Int = 0
-    private lateinit var database: DatabaseReference
+    private lateinit var db: FirebaseFirestore
 
     private val addedFriends = mutableSetOf<String>()
 
@@ -56,8 +60,8 @@ class SessionCompletionActivity : AppCompatActivity() {
         // Calculate points (1 point per 100 meters)
         points = (distance / 100).toInt()
 
-        // Initialize Firebase
-        database = FirebaseDatabase.getInstance().reference
+        // Initialize Firebase Firestore
+        db = FirebaseFirestore.getInstance()
 
         // Display stats
         displayStats()
@@ -81,6 +85,9 @@ class SessionCompletionActivity : AppCompatActivity() {
         // More realistic: 2000 steps per km, or 2 steps per meter
         val steps = (distance * 1.3).toInt()
         tvStepsValue.text = steps.toString()
+
+        // Update Firebase with session completion data
+        updateFirebaseData()
     }
 
     private fun loadParticipants() {
@@ -92,42 +99,42 @@ class SessionCompletionActivity : AppCompatActivity() {
             return
         }
 
-        // Firebase mode - load real participants
-        database.child("sessions").child(sessionId).child("participants")
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    friendsListContainer.removeAllViews()
+        // Firestore mode - load real participants from location collection
+        db.collection("location")
+            .whereEqualTo("locationName", intent.getStringExtra("locationName") ?: "")
+            .get()
+            .addOnSuccessListener { documents ->
+                friendsListContainer.removeAllViews()
+                var hasParticipants = false
 
-                    for (participantSnapshot in snapshot.children) {
-                        val participantId = participantSnapshot.key ?: continue
+                for (document in documents) {
+                    val sessionMap = document.get("sessionID") as? Map<String, String> ?: continue
+                    for ((key, participantId) in sessionMap) {
                         if (participantId != userId) {
-                            val name = participantSnapshot.child("name").getValue(String::class.java)
-                                ?: "Unknown User"
-                            val isAlreadyFriend = participantSnapshot.child("friends")
-                                .hasChild(userId)
-
-                            addParticipantRow(name, participantId, isAlreadyFriend)
+                            // For now, use participant ID as name (you could fetch user details)
+                            val name = "Walker ${participantId.take(4)}"
+                            addParticipantRow(name, participantId, false)
+                            hasParticipants = true
                         }
-                    }
-
-                    if (friendsListContainer.childCount == 0) {
-                        val noParticipantsText = TextView(this@SessionCompletionActivity).apply {
-                            text = "No other companions on this walk"
-                            gravity = Gravity.CENTER
-                            setPadding(24, 48, 24, 48)
-                            textSize = 20f
-                            setTextColor(Color.parseColor("#9B7B5B"))
-                            setBackgroundColor(Color.WHITE)
-                        }
-                        friendsListContainer.addView(noParticipantsText)
                     }
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@SessionCompletionActivity,
-                        "Failed to load participants", Toast.LENGTH_SHORT).show()
+                if (!hasParticipants) {
+                    val noParticipantsText = TextView(this@SessionCompletionActivity).apply {
+                        text = "No other companions on this walk"
+                        gravity = Gravity.CENTER
+                        setPadding(24, 48, 24, 48)
+                        textSize = 20f
+                        setTextColor(Color.parseColor("#9B7B5B"))
+                        setBackgroundColor(Color.WHITE)
+                    }
+                    friendsListContainer.addView(noParticipantsText)
                 }
-            })
+            }
+            .addOnFailureListener {
+                Toast.makeText(this@SessionCompletionActivity,
+                    "Failed to load participants", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun addParticipantRow(name: String, participantId: String, isAlreadyFriend: Boolean) {
@@ -236,19 +243,19 @@ class SessionCompletionActivity : AppCompatActivity() {
         addedFriends.add(friendId)
 
         if (sessionId.isNotEmpty()) {
-            // Add to Firebase
-            val updates = hashMapOf<String, Any>(
-                "users/$userId/friends/$friendId" to mapOf(
-                    "name" to friendName,
-                    "addedAt" to ServerValue.TIMESTAMP
-                ),
-                "users/$friendId/friends/$userId" to mapOf(
-                    "name" to "You",
-                    "addedAt" to ServerValue.TIMESTAMP
-                )
+            // Add friend relationship in Firestore (you could create a friends collection)
+            val friendData = hashMapOf(
+                "friendId" to friendId,
+                "friendName" to friendName,
+                "addedAt" to System.currentTimeMillis()
             )
 
-            database.updateChildren(updates)
+            // Store friend relationship (optional - you can implement this later)
+            db.collection("kopi")
+                .document(userId)
+                .collection("friends")
+                .document(friendId)
+                .set(friendData)
                 .addOnSuccessListener {
                     Toast.makeText(this, "$friendName added as friend!", Toast.LENGTH_SHORT).show()
                 }
@@ -263,19 +270,90 @@ class SessionCompletionActivity : AppCompatActivity() {
 
     private fun setupButtons() {
         btnBackToHome.setOnClickListener {
-            // Go back to main activity
-            val intent = Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            startActivity(intent)
-            finish()
+            navigateToHome()
         }
+    }
+
+    private fun navigateToHome() {
+        // Clear the entire activity stack and go to MainActivity
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
+    }
+
+    override fun onBackPressed() {
+        // Prevent going back to the session map
+        navigateToHome()
     }
 
     private fun createCircleDrawable(color: Int): GradientDrawable {
         return GradientDrawable().apply {
             shape = GradientDrawable.OVAL
             setColor(color)
+        }
+    }
+
+    private fun updateFirebaseData() {
+        // Check if we have a valid user ID
+        if (userId.isEmpty()) {
+            // Try to get current user ID from Firebase Auth
+            userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        }
+
+        if (userId.isEmpty()) {
+            // Cannot save without a user ID
+            android.util.Log.e("SessionCompletion", "No user ID available, cannot save to Firestore")
+            return
+        }
+
+        // Generate session ID if needed
+        if (sessionId.isEmpty()) {
+            sessionId = "walk_${System.currentTimeMillis()}"
+        }
+
+        android.util.Log.d("SessionCompletion", "Saving session: $sessionId for user: $userId with $points points")
+
+        try {
+            val currentTime = System.currentTimeMillis()
+            // Get actual location name from intent, or use a meaningful default
+            val locationName = intent.getStringExtra("locationName")
+                ?: intent.getStringExtra("location")
+                ?: "Walking Session"
+
+            // Create WalkSession object
+            val walkSession = WalkSession(
+                sessionId = sessionId,
+                locationName = locationName,
+                startTime = currentTime - duration,  // Start time is current time minus duration
+                pointsEarned = points.toDouble(),
+                distance = distance,
+                duration = duration
+            )
+
+            // Use DatabaseInitializer to add the walk session to Firestore
+            DatabaseInitializer.addWalkSession(walkSession) { success ->
+                if (success) {
+                    android.util.Log.d("SessionCompletion", "Successfully saved session to Firestore!")
+                    runOnUiThread {
+                        Toast.makeText(this, "Session saved! You earned $points points!", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    android.util.Log.e("SessionCompletion", "Failed to save session to Firestore")
+                    runOnUiThread {
+                        Toast.makeText(this, "Failed to save session data", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            // Migration complete - Realtime Database code removed
+            // Only using Firestore now
+
+            // Session data saved to Firestore via DatabaseInitializer.addWalkSession above
+            // Legacy Realtime Database code removed - fully migrated to Firestore
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error updating Firebase: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 }

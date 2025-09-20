@@ -2,74 +2,120 @@ package com.example.myapplication.ui.login
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import com.example.myapplication.MainActivity
-import com.example.myapplication.R
-import com.example.myapplication.data.LoginDataSource
-import com.example.myapplication.data.LoginRepository
+import com.example.myapplication.databinding.ActivityLoginBinding
+import com.example.myapplication.util.AuthManager
+import com.example.myapplication.util.DatabaseInitializer
+import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : AppCompatActivity() {
 
-    private lateinit var loginViewModel: LoginViewModel
+    private lateinit var binding: ActivityLoginBinding
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val usernameEditText = findViewById<EditText>(R.id.username)
-        val passwordEditText = findViewById<EditText>(R.id.password)
-        val loginButton = findViewById<Button>(R.id.login)
-        val signupButton = findViewById<Button>(R.id.signup)
-        val loadingProgressBar = findViewById<ProgressBar>(R.id.loading)
+        // Hide action bar
+        supportActionBar?.hide()
 
-        val repository = LoginRepository(LoginDataSource())
-        val factory = LoginViewModelFactory(repository)
-        loginViewModel = ViewModelProvider(this, factory)[LoginViewModel::class.java]
+        auth = FirebaseAuth.getInstance()
 
-        loginViewModel.loginFormState.observe(this) {
-            loginButton.isEnabled = it.isDataValid
-        }
+        // Login button
+        binding.btnLogin.setOnClickListener {
+            val email = binding.etEmail.text.toString().trim()
+            val password = binding.etPassword.text.toString().trim()
 
-        loginViewModel.loginResult.observe(this) { result ->
-            loadingProgressBar.visibility = ProgressBar.GONE
-            if (result.success != null) {
-                Toast.makeText(this, "Welcome ${result.success.displayName}", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
-            } else if (result.error != null) {
-                Toast.makeText(this, result.error, Toast.LENGTH_SHORT).show()
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+
+            loginUser(email, password)
         }
 
-        val afterTextChangedListener = object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                loginViewModel.loginDataChanged(
-                    usernameEditText.text.toString(),
-                    passwordEditText.text.toString()
-                )
+        // Sign up button
+        binding.btnSignUp.setOnClickListener {
+            val email = binding.etEmail.text.toString().trim()
+            val password = binding.etPassword.text.toString().trim()
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            signUpUser(email, password)
         }
 
-        usernameEditText.addTextChangedListener(afterTextChangedListener)
-        passwordEditText.addTextChangedListener(afterTextChangedListener)
-
-        loginButton.setOnClickListener {
-            loadingProgressBar.visibility = ProgressBar.VISIBLE
-            loginViewModel.login(usernameEditText.text.toString(), passwordEditText.text.toString())
+        // Skip login for testing
+        binding.btnSkipLogin.setOnClickListener {
+            AuthManager.setLoggedIn(this, "test@kopikakis.sg")
+            navigateToMain()
         }
+    }
 
-        signupButton.setOnClickListener {
-            loadingProgressBar.visibility = ProgressBar.VISIBLE
-            loginViewModel.signup(usernameEditText.text.toString(), passwordEditText.text.toString())
-        }
+    private fun loginUser(email: String, password: String) {
+        binding.btnLogin.isEnabled = false
+        binding.btnSignUp.isEnabled = false
+
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    // Sign in success
+                    AuthManager.setLoggedIn(this, email)
+                    Toast.makeText(this, "Welcome back, kopi kaki!", Toast.LENGTH_SHORT).show()
+                    navigateToMain()
+                } else {
+                    // If sign in fails, display a message to the user
+                    Toast.makeText(this, "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                    binding.btnLogin.isEnabled = true
+                    binding.btnSignUp.isEnabled = true
+                }
+            }
+    }
+
+    private fun signUpUser(email: String, password: String) {
+        binding.btnLogin.isEnabled = false
+        binding.btnSignUp.isEnabled = false
+
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    // Sign up success - create user document in kopi collection
+                    val userId = auth.currentUser?.uid
+                    if (userId != null) {
+                        DatabaseInitializer.createUserDocument(userId) { success ->
+                            if (success) {
+                                AuthManager.setLoggedIn(this, email)
+                                Toast.makeText(this, "Welcome to Kopi Kakis Walking Club!", Toast.LENGTH_SHORT).show()
+                                navigateToMain()
+                            } else {
+                                Toast.makeText(this, "Account created but failed to initialize user data", Toast.LENGTH_SHORT).show()
+                                AuthManager.setLoggedIn(this, email)
+                                navigateToMain()
+                            }
+                        }
+                    } else {
+                        AuthManager.setLoggedIn(this, email)
+                        navigateToMain()
+                    }
+                } else {
+                    // If sign up fails, display a message to the user
+                    Toast.makeText(this, "Sign up failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                    binding.btnLogin.isEnabled = true
+                    binding.btnSignUp.isEnabled = true
+                }
+            }
+    }
+
+    private fun navigateToMain() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 }

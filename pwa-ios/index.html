@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kopi Kakis Walking Club</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6B4423">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Kopi Kakis">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen">
+        <div class="login-container">
+            <div class="logo">☕ ☕ ☕</div>
+            <h1>Kopi Kakis Walking Club</h1>
+            <p class="tagline">Jalan-jalan with your friends!</p>
+
+            <form id="loginForm">
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit" class="btn-primary">Login</button>
+            </form>
+
+            <p class="signup-link">
+                Don't have an account?
+                <span onclick="showSignup()">Sign up here</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Signup Screen -->
+    <div id="signupScreen" class="screen hidden">
+        <div class="login-container">
+            <div class="logo">☕ ☕ ☕</div>
+            <h1>Join Kopi Kakis</h1>
+
+            <form id="signupForm">
+                <input type="text" id="signupName" placeholder="Your Name" required>
+                <input type="email" id="signupEmail" placeholder="Email" required>
+                <input type="password" id="signupPassword" placeholder="Password" required>
+                <button type="submit" class="btn-primary">Sign Up</button>
+            </form>
+
+            <p class="signup-link">
+                Already have an account?
+                <span onclick="showLogin()">Login here</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboardScreen" class="screen hidden">
+        <div class="dashboard-container">
+            <div class="header">
+                <div class="logo-small">☕ ☕ ☕</div>
+                <h2>Kopi Kakis Walking Club</h2>
+                <p class="tagline">Jalan-jalan with your friends!</p>
+            </div>
+
+            <button id="joinSessionBtn" class="btn-large">
+                ☕ JOIN WALKING SESSION ☕
+            </button>
+
+            <p class="description">Scan QR or enter code to lim kopi and walk!</p>
+
+            <div class="button-grid">
+                <button onclick="showFriends()" class="btn-secondary">
+                    👥 MY KOPI KAKIS
+                </button>
+
+                <button onclick="showHistory()" class="btn-secondary">
+                    📜 HISTORY
+                </button>
+
+                <button onclick="showRewards()" class="btn-secondary">
+                    🎁 REWARDS
+                </button>
+            </div>
+
+            <div class="bottom-decoration">
+                <p>Your neighborhood kopitiam walking group</p>
+                <div>🥐 ☕ 🍞 ☕ 🥐</div>
+            </div>
+
+            <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+    </div>
+
+    <!-- QR Scanner Screen -->
+    <div id="qrScreen" class="screen hidden">
+        <div class="qr-container">
+            <div class="header">
+                <button onclick="showDashboard()" class="back-btn">← Back</button>
+                <h2>Join Walking Session</h2>
+            </div>
+
+            <div class="qr-section">
+                <div class="qr-icon">📱</div>
+                <h3>SCAN QR CODE TO JOIN</h3>
+                <p>Look for QR codes posted in<br>coffee shops, parks, and walking trails</p>
+
+                <button id="startCamera" class="btn-primary">Start Camera</button>
+                <video id="cameraVideo" autoplay playsinline style="display: none;"></video>
+                <canvas id="qrCanvas" style="display: none;"></canvas>
+            </div>
+
+            <div class="manual-entry">
+                <p>Or enter session code manually:</p>
+                <input type="text" id="sessionCode" placeholder="East Coast Park">
+                <button onclick="joinSession()" class="btn-secondary">Join Session</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Walking Session Screen -->
+    <div id="walkingScreen" class="screen hidden">
+        <div class="walking-container">
+            <div class="header">
+                <h2 id="sessionLocation">Walking Session</h2>
+                <div id="walkingTimer" class="timer">00:00:00</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="distanceValue">0.0</div>
+                    <div class="stat-label">km</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pointsValue">0</div>
+                    <div class="stat-label">points</div>
+                </div>
+            </div>
+
+            <div class="map-placeholder">
+                <div id="map">📍 GPS Location Tracking Active</div>
+            </div>
+
+            <div class="walking-controls">
+                <button id="pauseBtn" onclick="pauseWalking()" class="btn-secondary">⏸️ Pause</button>
+                <button id="endBtn" onclick="endWalking()" class="btn-danger">🏁 End Session</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Friends Screen -->
+    <div id="friendsScreen" class="screen hidden">
+        <div class="friends-container">
+            <div class="header">
+                <button onclick="showDashboard()" class="back-btn">← Back</button>
+                <h2>☕ My Kopi Kakis ☕</h2>
+            </div>
+
+            <div class="add-friend">
+                <input type="email" id="friendEmail" placeholder="Friend's email">
+                <button onclick="addFriend()" class="btn-primary">Add Friend</button>
+            </div>
+
+            <div id="friendsList" class="friends-list">
+                <!-- Friends will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- History Screen -->
+    <div id="historyScreen" class="screen hidden">
+        <div class="history-container">
+            <div class="header">
+                <button onclick="showDashboard()" class="back-btn">← Back</button>
+                <h2>☕ Walking History ☕</h2>
+            </div>
+
+            <div class="points-summary">
+                <div class="total-points">
+                    <span id="totalPoints">0</span> Total Points
+                </div>
+            </div>
+
+            <div id="historyList" class="history-list">
+                <!-- Walking history will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Rewards Screen -->
+    <div id="rewardsScreen" class="screen hidden">
+        <div class="rewards-container">
+            <div class="header">
+                <button onclick="showDashboard()" class="back-btn">← Back</button>
+                <h2>🎁 Rewards 🎁</h2>
+            </div>
+
+            <div class="points-balance">
+                <span id="rewardPoints">0</span> Points Available
+            </div>
+
+            <div class="drinks-grid">
+                <div class="drink-card" onclick="redeemDrink('Kopi O', 50)">
+                    <div class="drink-icon">☕</div>
+                    <div class="drink-name">Kopi O</div>
+                    <div class="drink-points">50 pts</div>
+                </div>
+                <div class="drink-card" onclick="redeemDrink('Hot Kopi', 60)">
+                    <div class="drink-icon">☕</div>
+                    <div class="drink-name">Hot Kopi</div>
+                    <div class="drink-points">60 pts</div>
+                </div>
+                <div class="drink-card" onclick="redeemDrink('Teh Peng', 55)">
+                    <div class="drink-icon">🧊</div>
+                    <div class="drink-name">Teh Peng</div>
+                    <div class="drink-points">55 pts</div>
+                </div>
+            </div>
+
+            <div id="couponsList" class="coupons-list">
+                <!-- Redeemed coupons will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <!-- QR Scanner Library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
+</body>
+</html>

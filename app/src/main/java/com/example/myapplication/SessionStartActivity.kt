@@ -61,14 +61,14 @@ class SessionStartActivity : AppCompatActivity() {
         // For testing in emulator - show dialog to enter code manually
         val builder = android.app.AlertDialog.Builder(this)
         builder.setTitle("Join Session")
-        builder.setMessage("Enter Session Code (or use test code: SESSION_TEST99)")
+        builder.setMessage("Enter Session Code (or use test code: East Coast Park)")
 
         val input = android.widget.EditText(this)
-        input.hint = "SESSION_TEST99"
+        input.hint = "East Coast Park"
         builder.setView(input)
 
         builder.setPositiveButton("Join") { _, _ ->
-            val sessionCode = input.text.toString().ifEmpty { "SESSION_TEST99" }
+            val sessionCode = input.text.toString().ifEmpty { "East Coast Park" }
             joinSession(sessionCode)
         }
 

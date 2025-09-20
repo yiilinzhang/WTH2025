@@ -56,7 +56,7 @@
     <Button
         android:id="@+id/btn_join_walking_session"
         android:layout_width="0dp"
-        android:layout_height="80dp"
+        android:layout_height="72dp"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:layout_marginTop="50dp"
@@ -102,7 +102,7 @@
         <Button
             android:id="@+id/btn_friends"
             android:layout_width="match_parent"
-            android:layout_height="68dp"
+            android:layout_height="72dp"
             android:text="👥 MY KOPI KAKIS"
             android:textSize="19sp"
             android:textStyle="bold"
@@ -110,15 +110,27 @@
             android:textColor="@android:color/white"
             android:layout_marginBottom="12dp" />
 
-        <!-- Leaderboard Button -->
+        <!-- History Button -->
         <Button
             android:id="@+id/btn_leaderboard"
             android:layout_width="match_parent"
-            android:layout_height="68dp"
-            android:text="🏆 LEADERBOARD"
+            android:layout_height="72dp"
+            android:text="📜 HISTORY"
             android:textSize="19sp"
             android:textStyle="bold"
             android:backgroundTint="#D4A574"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Walking Schedule Button -->
+        <Button
+            android:id="@+id/btn_schedule"
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:text="📅 WALKING SCHEDULE"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:backgroundTint="#A67B5B"
             android:textColor="@android:color/white"
             android:layout_marginBottom="12dp" />
 
@@ -126,7 +138,7 @@
         <Button
             android:id="@+id/btn_rewards"
             android:layout_width="match_parent"
-            android:layout_height="68dp"
+            android:layout_height="72dp"
             android:text="🎁 REWARDS"
             android:textSize="19sp"
             android:textStyle="bold"

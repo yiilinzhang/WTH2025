@@ -7,8 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
+import com.example.myapplication.R
 import com.example.myapplication.SessionStartActivity
+import com.example.myapplication.ScheduledWalksActivity
+import com.example.myapplication.FriendsListActivity
 import com.example.myapplication.databinding.FragmentDashboardBinding
 
 class DashboardFragment : Fragment() {
@@ -33,20 +36,24 @@ class DashboardFragment : Fragment() {
 
         // Setup friends button
         binding.btnFriends.setOnClickListener {
-            val intent = Intent(requireContext(), com.example.myapplication.FriendsListActivity::class.java)
+            val intent = Intent(requireContext(), FriendsListActivity::class.java)
             startActivity(intent)
         }
 
-        // Setup leaderboard button - navigates to HomeFragment (which has the leaderboard)
+        // Setup leaderboard button
         binding.btnLeaderboard.setOnClickListener {
-            val navController = requireActivity().findNavController(com.example.myapplication.R.id.nav_host_fragment_content_main)
-            navController.navigate(com.example.myapplication.R.id.nav_leaderboard)
+            findNavController().navigate(R.id.nav_leaderboard)
         }
 
-        // Setup rewards button - navigates to rewards/slideshow fragment
+        // Setup schedule button - now goes directly to My Walks tab
+        binding.btnSchedule.setOnClickListener {
+            val intent = Intent(requireContext(), ScheduledWalksActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Setup rewards button
         binding.btnRewards.setOnClickListener {
-            val navController = requireActivity().findNavController(com.example.myapplication.R.id.nav_host_fragment_content_main)
-            navController.navigate(com.example.myapplication.R.id.nav_rewards)
+            findNavController().navigate(R.id.nav_rewards)
         }
 
         return root

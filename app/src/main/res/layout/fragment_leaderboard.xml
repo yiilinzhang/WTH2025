@@ -32,7 +32,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Leaderboard"
+            android:text="History"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="#6B4423"
@@ -67,7 +67,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="☕ Kopi Leaderboard ☕"
+                android:text="☕ Walking History ☕"
                 android:textAlignment="center"
                 android:textSize="28sp"
                 android:textStyle="bold"
@@ -78,7 +78,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Check your walking points!"
+                android:text="Track your walking journey!"
                 android:textAlignment="center"
                 android:textSize="16sp"
                 android:textColor="#8B5A3C"
@@ -145,41 +145,6 @@
                         android:textSize="14sp"
                         android:textColor="#9B7B5B"
                         android:layout_marginTop="16dp" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
-                        android:baselineAligned="false"
-                        android:gravity="center">
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnGoScan"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Scan QR"
-                            android:backgroundTint="#6B4423"
-                            app:icon="@drawable/ic_menu_camera"
-                            app:iconGravity="textStart" />
-
-                        <Space
-                            android:layout_width="12dp"
-                            android:layout_height="0dp" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnGoRedeem"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Redeem"
-                            android:textColor="#6B4423"
-                            app:strokeColor="#D4A574"
-                            app:icon="@drawable/ic_menu_camera"
-                            app:iconGravity="textStart"
-                            app:iconTint="#6B4423" />
-                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -194,7 +159,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Recent Walking Sessions"
+                    android:text="Your Walking Sessions"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="#6B4423" />

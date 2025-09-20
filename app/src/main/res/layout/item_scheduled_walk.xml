@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Location - Big and Clear -->
+        <TextView
+            android:id="@+id/tvLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🌊 East Coast Park"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#6B4423"
+            android:textAlignment="center"
+            android:padding="8dp"
+            android:layout_marginBottom="12dp"
+            tools:text="🌊 East Coast Park" />
+
+        <!-- Time - Big and Clear -->
+        <TextView
+            android:id="@+id/tvDateTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🌅 Tomorrow Morning, 7:00 AM"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#6B4423"
+            android:textAlignment="center"
+            android:padding="8dp"
+            android:layout_marginBottom="12dp"
+            tools:text="🌅 Tomorrow Morning, 7:00 AM" />
+
+        <!-- Simple Participants Info -->
+        <TextView
+            android:id="@+id/tvParticipants"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="👥 3 walking kakis joined so far"
+            android:textSize="18sp"
+            android:textColor="#8B5A3C"
+            android:textAlignment="center"
+            android:padding="8dp"
+            android:background="#F5E6D3"
+            android:layout_marginBottom="16dp"
+            tools:text="👥 3 walking kakis joined so far" />
+
+        <!-- Big Action Button -->
+        <Button
+            android:id="@+id/btnAction"
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:text="🚶‍♀️ Join This Walk!"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:backgroundTint="#8B5A3C"
+            android:textColor="@android:color/white"
+            app:cornerRadius="16dp"
+            tools:text="🚶‍♀️ Join This Walk!" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5E6D3">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+
+            <!-- Simple Filter Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <Button
+                    android:id="@+id/btnShowAll"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="📅 All Walks"
+                    android:textSize="18sp"
+                    android:backgroundTint="#8B5A3C"
+                    android:textColor="@android:color/white"
+                    app:cornerRadius="12dp"
+                    android:layout_marginEnd="8dp" />
+
+                <Button
+                    android:id="@+id/btnShowSoon"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="⏰ Soon"
+                    android:textSize="18sp"
+                    android:backgroundTint="#D4A574"
+                    android:textColor="@android:color/white"
+                    app:cornerRadius="12dp" />
+            </LinearLayout>
+
+            <!-- Main Walks List -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:id="@+id/tvWalksTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Upcoming Walking Sessions"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#6B4423" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🚶‍♀️🚶‍♂️"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#FFF9F3"
+                app:cardUseCompatPadding="true">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvUpcomingWalks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:overScrollMode="never"
+                    android:padding="8dp"
+                    tools:itemCount="3"
+                    tools:listitem="@layout/item_scheduled_walk" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Walks Nearby Section -->
+            <LinearLayout
+                android:id="@+id/llWalksNearby"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="32dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Walks Nearby"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#6B4423" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🌏"
+                        android:textSize="20sp" />
+                </LinearLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="#FFF9F3"
+                    app:cardUseCompatPadding="true">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvWalksNearby"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        android:overScrollMode="never"
+                        android:padding="8dp"
+                        tools:itemCount="2"
+                        tools:listitem="@layout/item_scheduled_walk" />
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- Bottom Decoration -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="☕ Join your walking kakis! ☕"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                android:textColor="#8B5A3C"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -120,70 +120,70 @@
         </div>
 
         <div class="session-grid">
-            <!-- Central Park Morning Walk -->
+            <!-- East Coast Park -->
             <div class="session-card">
-                <div class="location-name">☀️ Central Park Morning</div>
-                <div class="session-code">PARK_MORNING_01</div>
+                <div class="location-name">🏖️ East Coast Park</div>
+                <div class="session-code">East Coast Park</div>
                 <div id="qr1" class="qr-code"></div>
                 <div style="font-size: 12px; color: #666;">
-                    Meet at main entrance<br>
-                    Daily 6-10 AM
+                    Scenic coastal walking<br>
+                    Sea breeze & exercise
                 </div>
                 <button class="print-button" onclick="window.print()">Print All</button>
             </div>
 
-            <!-- Coffee Shop Walkers -->
+            <!-- Botanic Garden -->
             <div class="session-card">
-                <div class="location-name">☕ Starbucks Trail</div>
-                <div class="session-code">COFFEE_WALK_01</div>
+                <div class="location-name">🌿 Botanic Garden</div>
+                <div class="session-code">Botanic Garden</div>
                 <div id="qr2" class="qr-code"></div>
                 <div style="font-size: 12px; color: #666;">
-                    Start from any Starbucks<br>
-                    Walk to next location
+                    Peaceful nature walk<br>
+                    Beautiful gardens
                 </div>
             </div>
 
-            <!-- Riverside Path -->
+            <!-- Bishan Park -->
             <div class="session-card">
-                <div class="location-name">🌊 Riverside Path</div>
-                <div class="session-code">RIVER_TRAIL_01</div>
+                <div class="location-name">🌳 Bishan Park</div>
+                <div class="session-code">Bishan Park</div>
                 <div id="qr3" class="qr-code"></div>
                 <div style="font-size: 12px; color: #666;">
-                    Scenic river walk<br>
-                    All day access
+                    Community park<br>
+                    Riverside paths
                 </div>
             </div>
 
-            <!-- Downtown Lunch Walk -->
+            <!-- East Coast Park (duplicate) -->
             <div class="session-card">
-                <div class="location-name">🏙️ Downtown Lunch</div>
-                <div class="session-code">LUNCH_WALK_01</div>
+                <div class="location-name">🏖️ East Coast Park</div>
+                <div class="session-code">East Coast Park</div>
                 <div id="qr4" class="qr-code"></div>
                 <div style="font-size: 12px; color: #666;">
-                    Office lunch breaks<br>
-                    12-1 PM weekdays
+                    Scenic coastal walking<br>
+                    Sea breeze & exercise
                 </div>
             </div>
 
-            <!-- Evening Fitness Walk -->
+            <!-- Botanic Garden (duplicate) -->
             <div class="session-card">
-                <div class="location-name">🌅 Evening Fitness</div>
-                <div class="session-code">EVENING_FIT_01</div>
+                <div class="location-name">🌿 Botanic Garden</div>
+                <div class="session-code">Botanic Garden</div>
                 <div id="qr5" class="qr-code"></div>
                 <div style="font-size: 12px; color: #666;">
-                    After work walks<br>
-                    5-7 PM daily
+                    Peaceful nature walk<br>
+                    Beautiful gardens
                 </div>
             </div>
 
-            <!-- Dog Walking Group -->
+            <!-- Bishan Park (duplicate) -->
             <div class="session-card">
-                <div class="location-name">🐕 Dog Park Circuit</div>
-                <div class="session-code">DOG_WALK_01</div>
+                <div class="location-name">🌳 Bishan Park</div>
+                <div class="session-code">Bishan Park</div>
                 <div id="qr6" class="qr-code"></div>
                 <div style="font-size: 12px; color: #666;">
-                    Bring your pets!<br>
-                    Morning & evening
+                    Community park<br>
+                    Riverside paths
                 </div>
             </div>
         </div>
@@ -192,12 +192,12 @@
     <script>
         // Generate QR codes for each session
         const sessions = [
-            { id: 'qr1', code: 'PARK_MORNING_01' },
-            { id: 'qr2', code: 'COFFEE_WALK_01' },
-            { id: 'qr3', code: 'RIVER_TRAIL_01' },
-            { id: 'qr4', code: 'LUNCH_WALK_01' },
-            { id: 'qr5', code: 'EVENING_FIT_01' },
-            { id: 'qr6', code: 'DOG_WALK_01' }
+            { id: 'qr1', code: 'East Coast Park' },
+            { id: 'qr2', code: 'Botanic Garden' },
+            { id: 'qr3', code: 'Bishan Park' },
+            { id: 'qr4', code: 'East Coast Park' },
+            { id: 'qr5', code: 'Botanic Garden' },
+            { id: 'qr6', code: 'Bishan Park' }
         ];
 
         sessions.forEach(session => {

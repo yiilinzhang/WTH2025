@@ -54,7 +54,7 @@ dependencies {
     // Firebase Authentication
     implementation("com.google.firebase:firebase-auth-ktx:22.1.0")
 
-    // Optional: Firestore (for points/meetings)
+    // Firestore (for points/meetings)
     implementation("com.google.firebase:firebase-firestore-ktx:24.6.0")
 
     // Firebase Realtime Database for live location sharing
@@ -73,7 +73,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.1")
 
-    implementation("com.google.firebase:firebase-database-ktx:21.0.0")
+    // Firebase - Firestore only (Realtime Database removed)
     implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
 
 

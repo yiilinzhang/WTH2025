@@ -1,0 +1,32 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#F5E6D3" rx="64"/>
+
+  <!-- Coffee cup base -->
+  <ellipse cx="256" cy="320" rx="120" ry="100" fill="#6B4423"/>
+
+  <!-- Coffee cup -->
+  <rect x="200" y="220" width="112" height="140" rx="16" fill="#8B5A3C"/>
+
+  <!-- Coffee -->
+  <rect x="212" y="232" width="88" height="100" rx="8" fill="#4A2B18"/>
+
+  <!-- Steam -->
+  <path d="M230 200 Q235 180 230 160 Q225 140 230 120" stroke="#D4A574" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M256 200 Q261 180 256 160 Q251 140 256 120" stroke="#D4A574" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M282 200 Q287 180 282 160 Q277 140 282 120" stroke="#D4A574" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+  <!-- Handle -->
+  <path d="M312 240 Q340 240 340 280 Q340 320 312 320" stroke="#8B5A3C" stroke-width="12" fill="none"/>
+
+  <!-- Walking icon -->
+  <circle cx="180" cy="120" r="25" fill="#6B4423"/>
+  <path d="M180 145 L180 200 L160 240 M180 170 L210 170 M180 200 L200 240" stroke="#6B4423" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Location pin -->
+  <path d="M350 120 Q350 100 370 100 Q390 100 390 120 Q390 140 370 160 Q350 140 350 120" fill="#CC6666"/>
+  <circle cx="370" cy="120" r="8" fill="white"/>
+
+  <!-- Text -->
+  <text x="256" y="450" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#6B4423" text-anchor="middle">☕</text>
+</svg>

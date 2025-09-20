@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow authenticated users to read/write their own documents in kopi collection
+    match /kopi/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow authenticated users to read/write location documents
+    match /location/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Development rules - REMOVE IN PRODUCTION
+    // Temporarily allow all authenticated users to read/write all documents
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

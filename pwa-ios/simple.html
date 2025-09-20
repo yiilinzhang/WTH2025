@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kopi Kakis - Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #F5E6D3;
+            padding: 20px;
+            text-align: center;
+        }
+        .header { color: #6B4423; }
+        .btn {
+            background: #6B4423;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        #location { margin: 20px; font-size: 18px; }
+        #status { color: #8B5A3C; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1 class="header">☕ Kopi Kakis Test ☕</h1>
+    <p>Simple GPS tracking test</p>
+
+    <button class="btn" onclick="startTracking()">Start Location Test</button>
+    <button class="btn" onclick="startCamera()">Test Camera</button>
+
+    <div id="status">Ready to test</div>
+    <div id="location">Location will appear here</div>
+
+    <video id="camera" style="width: 100%; max-width: 300px; display: none;" autoplay></video>
+
+    <script>
+        let watchId = null;
+
+        function startTracking() {
+            document.getElementById('status').textContent = 'Starting GPS...';
+
+            if ('geolocation' in navigator) {
+                watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        const lat = position.coords.latitude.toFixed(6);
+                        const lon = position.coords.longitude.toFixed(6);
+                        const accuracy = position.coords.accuracy.toFixed(0);
+
+                        document.getElementById('location').innerHTML =
+                            `📍 Lat: ${lat}<br>📍 Lon: ${lon}<br>🎯 Accuracy: ${accuracy}m`;
+                        document.getElementById('status').textContent = 'GPS tracking active';
+                    },
+                    (error) => {
+                        document.getElementById('status').textContent = 'GPS error: ' + error.message;
+                    },
+                    { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
+                );
+            } else {
+                document.getElementById('status').textContent = 'GPS not supported';
+            }
+        }
+
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(stream => {
+                    const video = document.getElementById('camera');
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    document.getElementById('status').textContent = 'Camera active';
+                })
+                .catch(error => {
+                    document.getElementById('status').textContent = 'Camera error: ' + error.message;
+                });
+        }
+    </script>
+</body>
+</html>
