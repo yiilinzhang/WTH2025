@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.home
+package com.example.myapplication.ui.leaderboard
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,12 +10,12 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.R
-import com.example.myapplication.databinding.FragmentHomeBinding
+import com.example.myapplication.databinding.FragmentLeaderboardBinding
 import com.example.myapplication.databinding.ItemCheckinBinding
 
-class HomeFragment : Fragment() {
+class LeaderboardFragment : Fragment() {
 
-    private var _binding: FragmentHomeBinding? = null
+    private var _binding: FragmentLeaderboardBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -23,7 +23,7 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        _binding = FragmentLeaderboardBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -35,7 +35,7 @@ class HomeFragment : Fragment() {
             findNavController().popBackStack()
         }
         binding.btnHome.setOnClickListener {
-            findNavController().navigate(R.id.nav_walkingMain)
+            findNavController().navigate(R.id.nav_dashboard)
         }
 
         // RecyclerView must have a LayoutManager + Adapter
@@ -64,10 +64,10 @@ class HomeFragment : Fragment() {
 
         // Quick actions
         binding.btnGoScan.setOnClickListener {
-            findNavController().navigate(R.id.nav_gallery)
+            findNavController().navigate(R.id.nav_qrscanner)
         }
         binding.btnGoRedeem.setOnClickListener {
-            findNavController().navigate(R.id.nav_slideshow)
+            findNavController().navigate(R.id.nav_rewards)
         }
     }
 

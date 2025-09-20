@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.slideshow
+package com.example.myapplication.ui.rewards
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,11 +7,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.myapplication.R
-import com.example.myapplication.databinding.FragmentSlideshowBinding
+import com.example.myapplication.databinding.FragmentRewardsBinding
 
-class SlideshowFragment : Fragment() {
+class RewardsFragment : Fragment() {
 
-    private var _binding: FragmentSlideshowBinding? = null
+    private var _binding: FragmentRewardsBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -19,7 +19,7 @@ class SlideshowFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentSlideshowBinding.inflate(inflater, container, false)
+        _binding = FragmentRewardsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -31,7 +31,7 @@ class SlideshowFragment : Fragment() {
             findNavController().popBackStack()
         }
         binding.btnHome.setOnClickListener {
-            findNavController().navigate(R.id.nav_walkingMain)
+            findNavController().navigate(R.id.nav_dashboard)
         }
     }
 

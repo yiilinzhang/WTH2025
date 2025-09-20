@@ -37,7 +37,7 @@ class FriendsFragment : Fragment() {
             findNavController().popBackStack()
         }
         binding.btnHome.setOnClickListener {
-            findNavController().navigate(R.id.nav_walkingMain)
+            findNavController().navigate(R.id.nav_dashboard)
         }
     }
 
