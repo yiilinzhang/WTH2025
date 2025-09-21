@@ -363,70 +363,6 @@ function showMessage(message, isError = false) {
     alert(message); // Simple alert for now, can be improved with toast
 }
 
-// Show notification for participant joins with visual feedback
-function showNotification(message, duration = 3000) {
-    // Check if there's an existing notification div
-    let notification = document.getElementById('participantNotification');
-
-    if (!notification) {
-        // Create notification element
-        notification = document.createElement('div');
-        notification.id = 'participantNotification';
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            z-index: 10000;
-            animation: slideDown 0.5s ease-out;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        `;
-        document.body.appendChild(notification);
-
-        // Add animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideDown {
-                from { top: -100px; opacity: 0; }
-                to { top: 20px; opacity: 1; }
-            }
-            @keyframes slideUp {
-                from { top: 20px; opacity: 1; }
-                to { top: -100px; opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    // Update message
-    notification.innerHTML = `🎉 ${message}`;
-    notification.style.animation = 'slideDown 0.5s ease-out';
-    notification.style.display = 'block';
-
-    // Play a sound if available
-    try {
-        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBDGJ0fPTgjMGHm7A7+OZURE=');
-        audio.volume = 0.3;
-        audio.play();
-    } catch (e) {
-        console.log('Could not play notification sound');
-    }
-
-    // Auto-hide after duration
-    setTimeout(() => {
-        notification.style.animation = 'slideUp 0.5s ease-out';
-        setTimeout(() => {
-            notification.style.display = 'none';
-        }, 500);
-    }, duration);
-}
-
 // Authentication Functions
 function showLogin() {
     showScreen('loginScreen');
@@ -739,8 +675,7 @@ async function joinExistingSession(sessionId, sessionData) {
 
         await db.collection('activeSessions').doc(sessionId).update({
             participants: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
-            participantNames: firebase.firestore.FieldValue.arrayUnion(userName),
-            lastUpdated: Date.now() // Add timestamp to trigger real-time sync
+            participantNames: firebase.firestore.FieldValue.arrayUnion(userName)
         });
 
         walkingSession.sessionId = sessionId;
@@ -785,9 +720,6 @@ function showFindFriendsScreen() {
 
     // Start listening for other participants joining
     listenForParticipants();
-
-    // Also start a manual polling mechanism for faster updates
-    startParticipantPolling();
 }
 
 // Create a walking session that others can join
@@ -834,31 +766,7 @@ async function createWalkingSession() {
         await db.collection('activeSessions').doc(sessionId).set(sessionData);
         walkingSession.sessionId = sessionId;
 
-        // Initialize group walk data for the session creator
-        walkingSession.isGroupWalk = false; // Will become true when others join
-        walkingSession.groupParticipants = [currentUser.uid];
-        walkingSession.groupParticipantNames = [currentUser.displayName || currentUser.email.split('@')[0]];
-
         console.log('Created walking session:', sessionId);
-
-        // Display the session creator as the first participant
-        displayParticipants({
-            names: walkingSession.groupParticipantNames,
-            ids: walkingSession.groupParticipants
-        });
-
-        // Force immediate sync check
-        setTimeout(() => {
-            if (walkingSession.participantsListener) {
-                // Trigger a manual check
-                db.collection('activeSessions').doc(sessionId).get().then(doc => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        console.log('🔄 Manual sync check - participants:', data.participantNames);
-                    }
-                });
-            }
-        }, 1000);
     } catch (error) {
         console.error('Error creating walking session:', error);
     }
@@ -1131,10 +1039,10 @@ function startMockMovementForTesting() {
             // Add to total distance (already amplified by 100x in updateLocationData)
             walkingSession.distance += mockDistance * 100; // Amplify for testing
 
-            // Calculate points with group bonus (20% for group walks with 2+ people)
+            // Calculate points with group bonus (10% per additional person)
             const basePoints = walkingSession.distance * 10;
-            const groupMultiplier = walkingSession.groupParticipants && walkingSession.groupParticipants.length > 1
-                ? 1.2 // 20% bonus for any group walk
+            const groupMultiplier = walkingSession.isGroupWalk && walkingSession.groupParticipants.length > 1
+                ? 1 + ((walkingSession.groupParticipants.length - 1) * 0.1)
                 : 1;
             walkingSession.points = Math.floor(basePoints * groupMultiplier);
 
@@ -1201,10 +1109,10 @@ function updateLocationData(position, lastPosition) {
             const amplifiedDistance = distance * 100;
             walkingSession.distance += amplifiedDistance;
 
-            // Calculate points with group bonus (20% for group walks with 2+ people)
+            // Calculate points with group bonus (10% per additional person)
             const basePoints = walkingSession.distance * 10;
-            const groupMultiplier = walkingSession.groupParticipants && walkingSession.groupParticipants.length > 1
-                ? 1.2 // 20% bonus for any group walk
+            const groupMultiplier = walkingSession.isGroupWalk && walkingSession.groupParticipants.length > 1
+                ? 1 + ((walkingSession.groupParticipants.length - 1) * 0.1)
                 : 1;
             walkingSession.points = Math.floor(basePoints * groupMultiplier);
 
@@ -1414,12 +1322,6 @@ async function endWalking() {
         if (walkingSession.mockInterval) {
             clearInterval(walkingSession.mockInterval);
         }
-        if (walkingSession.pollingInterval) {
-            clearInterval(walkingSession.pollingInterval);
-        }
-        if (walkingSession.participantsListener) {
-            walkingSession.participantsListener();
-        }
 
         // Clean up map
         if (walkingSession.map) {
@@ -1624,7 +1526,7 @@ async function loadWalkingCompanions() {
             companionItem.innerHTML = `
                 <div class="completion-friend-name">${participantName}</div>
                 <button class="completion-add-friend-btn" disabled style="background: #4CAF50; cursor: default;">
-                    ✓ Friends
+                    ✓ Already Friend
                 </button>
             `;
         } else {
@@ -2025,17 +1927,8 @@ function formatDuration(milliseconds) {
 }
 
 // Rewards Functions
-let isRedeeming = false; // Prevent duplicate redemptions
-
 async function redeemDrink(drinkName, pointsCost) {
     if (!currentUser) return;
-
-    // Prevent multiple simultaneous redemptions
-    if (isRedeeming) {
-        showMessage('Please wait, processing redemption...');
-        return;
-    }
-    isRedeeming = true;
 
     try {
         // Check if user has enough points
@@ -2045,7 +1938,6 @@ async function redeemDrink(drinkName, pointsCost) {
 
         if (currentPoints < pointsCost) {
             showMessage(`Not enough points! You need ${pointsCost} points but only have ${Math.floor(currentPoints)} points.`);
-            isRedeeming = false; // Reset flag before returning
             return;
         }
 
@@ -2077,8 +1969,6 @@ async function redeemDrink(drinkName, pointsCost) {
 
     } catch (error) {
         showMessage('Failed to redeem: ' + error.message);
-    } finally {
-        isRedeeming = false; // Reset the flag
     }
 }
 
@@ -2093,29 +1983,6 @@ async function loadCoupons() {
         try {
             snapshot = await db.collection('kopi').doc(currentUser.uid)
                 .collection('coupons').orderBy('redeemedAt', 'desc').get();
-
-            // Clean up any duplicate coupons (same code but different document IDs)
-            const seenCodes = new Set();
-            const duplicatesToDelete = [];
-
-            snapshot.forEach(doc => {
-                const coupon = doc.data();
-                if (seenCodes.has(coupon.code)) {
-                    // This is a duplicate, mark for deletion
-                    duplicatesToDelete.push(doc.ref);
-                } else {
-                    seenCodes.add(coupon.code);
-                }
-            });
-
-            // Delete any duplicates found
-            if (duplicatesToDelete.length > 0) {
-                console.log(`Cleaning up ${duplicatesToDelete.length} duplicate coupons`);
-                await Promise.all(duplicatesToDelete.map(ref => ref.delete()));
-                // Re-fetch after cleanup
-                snapshot = await db.collection('kopi').doc(currentUser.uid)
-                    .collection('coupons').orderBy('redeemedAt', 'desc').get();
-            }
         } catch (error) {
             // Collection doesn't exist yet
             couponsList.innerHTML = '<p style="text-align: center; color: #8B5A3C; margin: 20px;">No coupons yet. Redeem some drinks above!</p>';
@@ -2127,18 +1994,8 @@ async function loadCoupons() {
             return;
         }
 
-        // Track displayed coupons to avoid duplicates
-        const displayedCoupons = new Set();
-
         snapshot.forEach(doc => {
             const coupon = doc.data();
-
-            // Skip if we've already displayed this coupon code
-            if (displayedCoupons.has(coupon.code)) {
-                return;
-            }
-            displayedCoupons.add(coupon.code);
-
             const couponCard = document.createElement('div');
             couponCard.className = 'coupon-card';
 
@@ -2175,25 +2032,19 @@ async function displayParticipants(participantData) {
     const participants = participantData.names || [];
     const participantIds = participantData.ids || [];
 
-    console.log('📋 displayParticipants called with:', participants.length, 'participants:', participants);
+    // Only show participants if there's more than just the current user
+    if (participants.length <= 1) {
+        // Just the current user, keep showing "waiting for others"
+        if (participantsLoading) participantsLoading.style.display = 'block';
+        if (participantsDisplay) participantsDisplay.style.display = 'none';
+        if (participantsNames) participantsNames.innerHTML = '';
+        return;
+    }
 
-    // Show participants list even if it's just the session creator
-    if (participants.length >= 1) {
-        // Show loading message if only one participant (waiting for others)
-        if (participants.length === 1) {
-            console.log('👤 Only one participant (creator), showing waiting message');
-            if (participantsLoading) participantsLoading.style.display = 'block';
-            if (participantsDisplay) participantsDisplay.style.display = 'none';
-            // Also show the creator's name
-            if (participantsNames) {
-                participantsNames.innerHTML = `<div style="margin-top: 10px; opacity: 0.7;">You (${participants[0]}) are waiting for others...</div>`;
-            }
-        } else {
-            console.log('👥 Multiple participants, showing list');
-            // Hide loading message, show participants when there are multiple
-            if (participantsLoading) participantsLoading.style.display = 'none';
-            if (participantsDisplay) participantsDisplay.style.display = 'block';
-        }
+    if (participants.length > 1) { // More than just the current user
+        // Hide loading message, show participants
+        if (participantsLoading) participantsLoading.style.display = 'none';
+        if (participantsDisplay) participantsDisplay.style.display = 'block';
 
         // First, get current user's friends list
         let userFriends = [];
@@ -2208,7 +2059,7 @@ async function displayParticipants(participantData) {
         }
 
         // Clear and rebuild participants list with add friend buttons
-        if (participantsNames && participants.length > 1) {
+        if (participantsNames) {
             participantsNames.innerHTML = '';
             const currentUserName = currentUser.displayName || currentUser.email.split('@')[0];
 
@@ -2365,36 +2216,16 @@ function listenForParticipants() {
 
     console.log('👥 Listening for participants in session:', walkingSession.sessionId);
 
-    // Store previous participant count for notifications
-    let previousParticipantCount = walkingSession.groupParticipants ? walkingSession.groupParticipants.length : 1;
-
-    // Listen to the active session for changes with metadata
+    // Listen to the active session for changes
     const unsubscribe = db.collection('activeSessions')
         .doc(walkingSession.sessionId)
-        .onSnapshot({ includeMetadataChanges: true }, (doc) => {
+        .onSnapshot((doc) => {
             if (doc.exists) {
                 const sessionData = doc.data();
                 const participantNames = sessionData.participantNames || [];
                 const participantIds = sessionData.participants || [];
 
-                console.log('📊 Firebase session data - Names:', participantNames, 'IDs:', participantIds);
-                console.log('📊 Participant count:', participantNames.length);
-                console.log('📊 Metadata - From cache:', doc.metadata.fromCache, 'Has pending writes:', doc.metadata.hasPendingWrites);
-
-                // Check if someone new joined
-                if (participantIds.length > previousParticipantCount) {
-                    const newParticipants = participantNames.slice(previousParticipantCount);
-                    console.log('🎉 New participant(s) joined:', newParticipants);
-
-                    // Show notification for new participants
-                    if (newParticipants.length > 0) {
-                        const message = newParticipants.length === 1
-                            ? `${newParticipants[0]} has joined the walking session!`
-                            : `${newParticipants.join(', ')} have joined the walking session!`;
-                        showNotification(message);
-                    }
-                }
-                previousParticipantCount = participantIds.length;
+                console.log('Participants updated:', participantNames, participantIds);
 
                 // Update the UI with both names and IDs
                 displayParticipants({
@@ -2403,51 +2234,16 @@ function listenForParticipants() {
                 });
 
                 // Update walking session data
-                walkingSession.groupParticipants = participantIds;
-                walkingSession.groupParticipantNames = participantNames;
-                // Mark as group walk if there's more than one participant
-                if (participantIds.length > 1) {
+                if (participantNames.length > 1) {
                     walkingSession.isGroupWalk = true;
+                    walkingSession.groupParticipants = participantIds;
+                    walkingSession.groupParticipantNames = participantNames;
                 }
             }
         });
 
     // Store unsubscribe function to clean up later
     walkingSession.participantsListener = unsubscribe;
-}
-
-// Start polling for participant updates (backup for real-time sync)
-function startParticipantPolling() {
-    // Clear any existing polling interval
-    if (walkingSession.pollingInterval) {
-        clearInterval(walkingSession.pollingInterval);
-    }
-
-    // Poll every 2 seconds for faster updates
-    walkingSession.pollingInterval = setInterval(async () => {
-        if (!walkingSession.sessionId) {
-            clearInterval(walkingSession.pollingInterval);
-            return;
-        }
-
-        try {
-            const doc = await db.collection('activeSessions').doc(walkingSession.sessionId).get();
-            if (doc.exists) {
-                const data = doc.data();
-                const currentCount = walkingSession.groupParticipants ? walkingSession.groupParticipants.length : 0;
-                const newCount = data.participants ? data.participants.length : 0;
-
-                if (newCount !== currentCount) {
-                    console.log('🔄 Polling detected participant change:', currentCount, '->', newCount);
-                    // The onSnapshot listener will handle the update
-                }
-            }
-        } catch (error) {
-            console.error('Polling error:', error);
-        }
-    }, 2000); // Check every 2 seconds
-
-    console.log('📡 Started participant polling (every 2s)');
 }
 
 // PWA Manifest and Service Worker setup
@@ -2871,291 +2667,6 @@ async function loadMessages(friendId) {
         document.getElementById('chatMessages').innerHTML = '<div style="text-align: center; padding: 20px; color: #E53935;">Failed to load messages</div>';
     }
 }
-
-// Schedule Tab Functions
-function switchTab(tabName) {
-    // Hide all tab contents
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-
-    // Remove active class from all tabs
-    document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    // Show selected tab content
-    if (tabName === 'allWalks') {
-        document.getElementById('allWalksContent').classList.add('active');
-        document.getElementById('allWalksTab').classList.add('active');
-        loadMyWalks();
-        loadNearbyWalks();
-    } else if (tabName === 'scheduleWalk') {
-        document.getElementById('scheduleWalkContent').classList.add('active');
-        document.getElementById('scheduleWalkTab').classList.add('active');
-    }
-}
-
-async function loadMyWalks() {
-    if (!currentUser) return;
-
-    const myWalksList = document.getElementById('myWalksList');
-    myWalksList.innerHTML = '<div style="padding: 20px; color: #8B5A3C;">Loading...</div>';
-
-    try {
-        const now = Date.now();
-        const thirtyMinutesFromNow = now + (30 * 60 * 1000);
-
-        // Get walks created by current user
-        const snapshot = await db.collection('scheduledWalks')
-            .where('createdBy', '==', currentUser.uid)
-            .orderBy('scheduledTime', 'asc')
-            .get();
-
-        const walks = [];
-        const expiredWalks = [];
-
-        snapshot.forEach(doc => {
-            const walk = { id: doc.id, ...doc.data() };
-            const walkTime = walk.scheduledTime;
-
-            // Check if walk is expired (30 minutes past scheduled time)
-            if (walkTime < (now - 30 * 60 * 1000)) {
-                expiredWalks.push(doc.id);
-            } else {
-                walks.push(walk);
-            }
-        });
-
-        // Delete expired walks
-        for (const walkId of expiredWalks) {
-            await db.collection('scheduledWalks').doc(walkId).delete();
-            console.log('Deleted expired walk:', walkId);
-        }
-
-        if (walks.length === 0) {
-            myWalksList.innerHTML = '<div style="padding: 20px; color: #8B5A3C; text-align: center;">No scheduled walks</div>';
-            return;
-        }
-
-        myWalksList.innerHTML = walks.map(walk => {
-            const date = new Date(walk.scheduledTime);
-            const timeUntil = walk.scheduledTime - now;
-            const minutesUntil = Math.floor(timeUntil / (60 * 1000));
-            const hoursUntil = Math.floor(minutesUntil / 60);
-
-            let timeText = '';
-            if (minutesUntil < 0) {
-                timeText = 'Started';
-            } else if (hoursUntil > 0) {
-                timeText = `In ${hoursUntil}h ${minutesUntil % 60}m`;
-            } else {
-                timeText = `In ${minutesUntil}m`;
-            }
-
-            // Auto-remove check
-            if (walk.scheduledTime < (now - 30 * 60 * 1000)) {
-                return ''; // Don't display expired walks
-            }
-
-            return `
-                <div class="walk-item">
-                    <div class="walk-location">${walk.locationName}</div>
-                    <div class="walk-time">${date.toLocaleString()}</div>
-                    <div class="walk-status">${timeText}</div>
-                    <button class="join-btn" onclick="joinScheduledWalk('${walk.id}')">Join</button>
-                </div>
-            `;
-        }).join('');
-
-    } catch (error) {
-        console.error('Error loading my walks:', error);
-        myWalksList.innerHTML = '<div style="padding: 20px; color: #E53935;">Failed to load walks</div>';
-    }
-}
-
-async function loadNearbyWalks() {
-    const nearbyWalksList = document.getElementById('nearbyWalksList');
-    nearbyWalksList.innerHTML = '<div style="padding: 20px; color: #8B5A3C;">Loading...</div>';
-
-    try {
-        const now = Date.now();
-
-        // Get all upcoming walks
-        const snapshot = await db.collection('scheduledWalks')
-            .where('scheduledTime', '>', now - (30 * 60 * 1000)) // Include walks that started less than 30 mins ago
-            .orderBy('scheduledTime', 'asc')
-            .limit(10)
-            .get();
-
-        const walks = [];
-        const expiredWalks = [];
-
-        snapshot.forEach(doc => {
-            const walk = { id: doc.id, ...doc.data() };
-
-            // Check if walk is expired (30 minutes past scheduled time)
-            if (walk.scheduledTime < (now - 30 * 60 * 1000)) {
-                expiredWalks.push(doc.id);
-            } else if (walk.createdBy !== currentUser?.uid) { // Don't show user's own walks
-                walks.push(walk);
-            }
-        });
-
-        // Delete expired walks
-        for (const walkId of expiredWalks) {
-            await db.collection('scheduledWalks').doc(walkId).delete();
-            console.log('Deleted expired walk:', walkId);
-        }
-
-        if (walks.length === 0) {
-            nearbyWalksList.innerHTML = '<div style="padding: 20px; color: #8B5A3C; text-align: center;">No nearby walks scheduled</div>';
-            return;
-        }
-
-        nearbyWalksList.innerHTML = walks.map(walk => {
-            const date = new Date(walk.scheduledTime);
-            const timeUntil = walk.scheduledTime - now;
-            const minutesUntil = Math.floor(timeUntil / (60 * 1000));
-            const hoursUntil = Math.floor(minutesUntil / 60);
-
-            let timeText = '';
-            if (minutesUntil < 0) {
-                timeText = 'Started';
-            } else if (hoursUntil > 0) {
-                timeText = `In ${hoursUntil}h ${minutesUntil % 60}m`;
-            } else {
-                timeText = `In ${minutesUntil}m`;
-            }
-
-            return `
-                <div class="walk-item">
-                    <div class="walk-location">${walk.locationName}</div>
-                    <div class="walk-time">${date.toLocaleString()}</div>
-                    <div class="walk-organizer">By ${walk.createdByName || 'Anonymous'}</div>
-                    <div class="walk-status">${timeText}</div>
-                    <button class="join-btn" onclick="joinScheduledWalk('${walk.id}')">Join</button>
-                </div>
-            `;
-        }).join('');
-
-    } catch (error) {
-        console.error('Error loading nearby walks:', error);
-        nearbyWalksList.innerHTML = '<div style="padding: 20px; color: #E53935;">Failed to load walks</div>';
-    }
-}
-
-async function createWalk() {
-    const location = document.getElementById('walkLocation').value;
-    const date = document.getElementById('walkDate').value;
-    const time = document.getElementById('walkTime').value;
-
-    if (!location || !date || !time) {
-        showMessage('Please fill in all fields');
-        return;
-    }
-
-    if (!currentUser) {
-        showMessage('Please login first');
-        return;
-    }
-
-    try {
-        const scheduledTime = new Date(`${date}T${time}`).getTime();
-
-        // Don't allow scheduling in the past
-        if (scheduledTime < Date.now()) {
-            showMessage('Cannot schedule walks in the past');
-            return;
-        }
-
-        const walkData = {
-            locationName: location,
-            scheduledTime: scheduledTime,
-            createdBy: currentUser.uid,
-            createdByName: currentUser.displayName || currentUser.email.split('@')[0],
-            createdAt: Date.now(),
-            participants: [currentUser.uid]
-        };
-
-        await db.collection('scheduledWalks').add(walkData);
-
-        showMessage('Walk scheduled successfully!');
-
-        // Reset form
-        document.getElementById('createWalkForm').reset();
-        document.getElementById('walkLocation').value = '';
-        document.querySelectorAll('.location-btn').forEach(btn => {
-            btn.classList.remove('selected');
-        });
-
-        // Switch to all walks tab to see the new walk
-        switchTab('allWalks');
-
-    } catch (error) {
-        console.error('Error creating walk:', error);
-        showMessage('Failed to schedule walk', true);
-    }
-}
-
-async function joinScheduledWalk(walkId) {
-    if (!currentUser) {
-        showMessage('Please login first');
-        return;
-    }
-
-    try {
-        const walkDoc = await db.collection('scheduledWalks').doc(walkId).get();
-
-        if (!walkDoc.exists) {
-            showMessage('Walk not found');
-            return;
-        }
-
-        const walk = walkDoc.data();
-
-        // Start walking session with this location
-        walkingSession.locationName = walk.locationName;
-        walkingSession.isGroupWalk = true;
-        walkingSession.scheduledWalkId = walkId;
-
-        // Navigate to find friends screen
-        showFindFriendsScreen();
-
-    } catch (error) {
-        console.error('Error joining walk:', error);
-        showMessage('Failed to join walk', true);
-    }
-}
-
-function selectLocation(location) {
-    document.getElementById('walkLocation').value = location;
-
-    // Update button styles
-    document.querySelectorAll('.location-btn').forEach(btn => {
-        btn.classList.remove('selected');
-        if (btn.textContent.includes(location)) {
-            btn.classList.add('selected');
-        }
-    });
-}
-
-// Make functions globally available
-window.switchTab = switchTab;
-window.loadMyWalks = loadMyWalks;
-window.loadNearbyWalks = loadNearbyWalks;
-window.createWalk = createWalk;
-window.joinScheduledWalk = joinScheduledWalk;
-window.selectLocation = selectLocation;
-
-// Auto-refresh schedule every minute to remove expired walks
-setInterval(() => {
-    const scheduleScreen = document.getElementById('scheduleScreen');
-    if (scheduleScreen && !scheduleScreen.classList.contains('hidden')) {
-        loadMyWalks();
-        loadNearbyWalks();
-    }
-}, 60000); // Refresh every minute
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
