@@ -700,7 +700,10 @@ function showFindFriendsScreen() {
 
     // If we already joined an existing session, display the participants immediately
     if (walkingSession.sessionId && walkingSession.groupParticipantNames && walkingSession.groupParticipantNames.length > 0) {
-        displayParticipants(walkingSession.groupParticipantNames);
+        displayParticipants({
+            names: walkingSession.groupParticipantNames,
+            ids: walkingSession.groupParticipants || []
+        });
     } else {
         // Create a walking session in Firebase that others can join
         createWalkingSession();
@@ -715,6 +718,29 @@ async function createWalkingSession() {
     if (!currentUser) return;
 
     try {
+        // First, clean up old stale sessions (older than 2 hours)
+        const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
+        const staleSessionsSnapshot = await db.collection('activeSessions')
+            .where('createdAt', '<', twoHoursAgo)
+            .get();
+
+        // Delete stale sessions in batches
+        const deletePromises = [];
+        staleSessionsSnapshot.forEach(doc => {
+            const sessionData = doc.data();
+            // Only delete if it's not already marked as completed
+            if (sessionData.status !== 'completed') {
+                deletePromises.push(doc.ref.delete());
+                console.log('Cleaning up stale session:', doc.id);
+            }
+        });
+
+        if (deletePromises.length > 0) {
+            await Promise.all(deletePromises);
+            console.log(`Cleaned up ${deletePromises.length} stale sessions`);
+        }
+
+        // Now create the new session
         const sessionId = `${walkingSession.locationName}_${Date.now()}`;
         const sessionData = {
             sessionId: sessionId,
@@ -1337,6 +1363,26 @@ async function saveWalkingSession() {
         await loadUserData();
 
         console.log('✅ Session saved successfully with points:', walkingSession.points);
+
+        // Remove the session from activeSessions collection since it's completed
+        if (walkingSession.sessionId) {
+            try {
+                await db.collection('activeSessions').doc(walkingSession.sessionId).delete();
+                console.log('✅ Removed completed session from activeSessions:', walkingSession.sessionId);
+            } catch (deleteError) {
+                console.error('❌ Error removing session from activeSessions:', deleteError);
+                // Try to at least mark it as completed
+                try {
+                    await db.collection('activeSessions').doc(walkingSession.sessionId).update({
+                        status: 'completed',
+                        completedAt: Date.now()
+                    });
+                    console.log('✅ Marked session as completed in activeSessions');
+                } catch (updateError) {
+                    console.error('❌ Could not update session status:', updateError);
+                }
+            }
+        }
     } catch (error) {
         console.error('❌ Error saving session:', error);
         console.error('Session data that failed to save:', sessionData);
@@ -1910,29 +1956,48 @@ async function loadCoupons() {
 }
 
 // Display participants in the UI
-function displayParticipants(participants) {
+async function displayParticipants(participantData) {
     const participantsLoading = document.getElementById('participantsLoading');
     const participantsDisplay = document.getElementById('participantsDisplay');
     const participantsNames = document.getElementById('participantsNames');
+
+    // participantData should contain both names and IDs
+    const participants = participantData.names || [];
+    const participantIds = participantData.ids || [];
 
     if (participants.length > 1) { // More than just the current user
         // Hide loading message, show participants
         if (participantsLoading) participantsLoading.style.display = 'none';
         if (participantsDisplay) participantsDisplay.style.display = 'block';
 
+        // First, get current user's friends list
+        let userFriends = [];
+        try {
+            const friendsSnapshot = await db.collection('kopi').doc(currentUser.uid)
+                .collection('friends').get();
+            friendsSnapshot.forEach(doc => {
+                userFriends.push(doc.id); // Friend user IDs
+            });
+        } catch (error) {
+            console.error('Error loading friends list:', error);
+        }
+
         // Clear and rebuild participants list with add friend buttons
         if (participantsNames) {
             participantsNames.innerHTML = '';
             const currentUserName = currentUser.displayName || currentUser.email.split('@')[0];
 
-            participants.forEach(name => {
+            for (let i = 0; i < participants.length; i++) {
+                const name = participants[i];
+                const userId = participantIds[i];
+
                 const participantDiv = document.createElement('div');
                 participantDiv.style.cssText = `
                     display: flex;
                     align-items: center;
                     gap: 10px;
                     margin-bottom: 10px;
-                    padding: 8px;
+                    padding: 10px;
                     background: #F5E6D3;
                     border-radius: 10px;
                 `;
@@ -1941,37 +2006,62 @@ function displayParticipants(participants) {
                 badge.style.cssText = `
                     background: #8B5A3C;
                     color: white;
-                    padding: 6px 12px;
+                    padding: 8px 15px;
                     border-radius: 15px;
                     font-size: 14px;
                     flex: 1;
                 `;
-                badge.textContent = name;
 
-                // Add "Add Friend" button for other participants
-                if (name !== currentUserName) {
-                    const addFriendBtn = document.createElement('button');
-                    addFriendBtn.style.cssText = `
-                        background: #6B4423;
-                        color: white;
-                        border: none;
-                        padding: 4px 12px;
-                        border-radius: 8px;
-                        font-size: 12px;
-                        cursor: pointer;
-                    `;
-                    addFriendBtn.textContent = 'Add Friend';
-                    addFriendBtn.onclick = () => addParticipantAsFriend(name, addFriendBtn);
-
-                    participantDiv.appendChild(badge);
-                    participantDiv.appendChild(addFriendBtn);
-                } else {
+                // Check if this is the current user
+                if (userId === currentUser.uid) {
                     badge.textContent = name + ' (You)';
                     participantDiv.appendChild(badge);
+                } else {
+                    badge.textContent = name;
+
+                    // Check if already friends
+                    const isAlreadyFriend = userFriends.includes(userId);
+
+                    if (isAlreadyFriend) {
+                        // Show "Already Friends" indicator
+                        const friendIndicator = document.createElement('div');
+                        friendIndicator.style.cssText = `
+                            background: #4CAF50;
+                            color: white;
+                            padding: 6px 12px;
+                            border-radius: 8px;
+                            font-size: 12px;
+                            display: flex;
+                            align-items: center;
+                            gap: 4px;
+                        `;
+                        friendIndicator.innerHTML = '✓ Friends';
+
+                        participantDiv.appendChild(badge);
+                        participantDiv.appendChild(friendIndicator);
+                    } else {
+                        // Show "Add Friend" button
+                        const addFriendBtn = document.createElement('button');
+                        addFriendBtn.style.cssText = `
+                            background: #6B4423;
+                            color: white;
+                            border: none;
+                            padding: 6px 12px;
+                            border-radius: 8px;
+                            font-size: 12px;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                        `;
+                        addFriendBtn.textContent = '+ Add Friend';
+                        addFriendBtn.onclick = () => addParticipantAsFriend(name, userId, addFriendBtn);
+
+                        participantDiv.appendChild(badge);
+                        participantDiv.appendChild(addFriendBtn);
+                    }
                 }
 
                 participantsNames.appendChild(participantDiv);
-            });
+            }
         }
     } else {
         // Only the current user, show waiting message
@@ -1981,24 +2071,31 @@ function displayParticipants(participants) {
 }
 
 // Add participant as friend
-async function addParticipantAsFriend(participantName, button) {
-    if (!currentUser) return;
+async function addParticipantAsFriend(participantName, participantId, button) {
+    if (!currentUser || !participantId) return;
 
     try {
-        // Find the user by name
-        const userQuery = await db.collection('users')
-            .where('name', '==', participantName)
-            .get();
+        // Get participant's user data
+        const userDoc = await db.collection('users').doc(participantId).get();
 
-        if (userQuery.empty) {
-            console.log('User not found:', participantName);
-            button.textContent = 'Not Found';
-            button.style.background = '#E53935';
-            return;
+        if (!userDoc.exists) {
+            // If user doc doesn't exist, try to find by name
+            const userQuery = await db.collection('users')
+                .where('name', '==', participantName)
+                .get();
+
+            if (userQuery.empty) {
+                console.log('User not found:', participantName);
+                button.textContent = 'Not Found';
+                button.style.background = '#E53935';
+                return;
+            }
+
+            const friendDoc = userQuery.docs[0];
+            var friendData = friendDoc.data();
+        } else {
+            var friendData = userDoc.data();
         }
-
-        const friendDoc = userQuery.docs[0];
-        const friendData = friendDoc.data();
 
         // Add friend bidirectionally
         const friendInfo = {
@@ -2049,18 +2146,22 @@ function listenForParticipants() {
         .onSnapshot((doc) => {
             if (doc.exists) {
                 const sessionData = doc.data();
-                const participants = sessionData.participantNames || [];
+                const participantNames = sessionData.participantNames || [];
+                const participantIds = sessionData.participants || [];
 
-                console.log('Participants updated:', participants);
+                console.log('Participants updated:', participantNames, participantIds);
 
-                // Update the UI
-                displayParticipants(participants);
+                // Update the UI with both names and IDs
+                displayParticipants({
+                    names: participantNames,
+                    ids: participantIds
+                });
 
                 // Update walking session data
-                if (participants.length > 1) {
+                if (participantNames.length > 1) {
                     walkingSession.isGroupWalk = true;
-                    walkingSession.groupParticipants = sessionData.participants;
-                    walkingSession.groupParticipantNames = participants;
+                    walkingSession.groupParticipants = participantIds;
+                    walkingSession.groupParticipantNames = participantNames;
                 }
             }
         });
@@ -2383,6 +2484,9 @@ function openChat(friendId, friendName) {
     showScreen('chatScreen');
     loadMessages(friendId);
 }
+// Make chat functions available globally for onclick handlers
+window.openChat = openChat;
+window.sendMessage = sendMessage;
 
 async function sendMessage() {
     if (!currentUser || !currentChatFriendId) return;

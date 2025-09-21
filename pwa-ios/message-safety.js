@@ -60,6 +60,37 @@ class MessageSafety {
             /\b(?:act\s+now|limited\s+time|expires?\s+(?:today|soon))/i
         ];
 
+        // Explicit and inappropriate content patterns
+        this.explicitPatterns = [
+            /\bf+[u*]+[c*]+k/gi,
+            /\bs+h+[i*]+t/gi,
+            /\ba+s+s+h+o+l+e/gi,
+            /\bb+[i*]+t+c+h/gi,
+            /\bd+[i*]+c+k/gi,
+            /\bc+o+c+k/gi,
+            /\bp+u+s+s+y/gi,
+            /\bn+[i*]+g+g+[ae]/gi,
+            /\bf+a+g/gi,
+            /\bc+u+n+t/gi,
+            /\bw+h+o+r+e/gi,
+            /\bs+l+u+t/gi,
+            /\bb+a+s+t+a+r+d/gi,
+            /\bd+a+m+n/gi,
+            /\bh+e+l+l/gi,
+            /\bp+[i*]+s+s/gi,
+            /\bs+e+x/gi,
+            /\bp+o+r+n/gi,
+            /\bk+[i*]+l+l/gi,
+            /\bm+u+r+d+e+r/gi,
+            /\br+a+p+e/gi,
+            /\bs+u+[i*]+c+[i*]+d+e/gi,
+            /\bd+r+u+g+s/gi,
+            /\bw+e+e+d/gi,
+            /\bc+o+c+a+[i*]+n+e/gi,
+            /\bh+e+r+o+[i*]+n/gi,
+            /\bm+e+t+h/gi
+        ];
+
         // Track warnings shown to avoid spam
         this.recentWarnings = new Map();
         this.warningCooldown = 5000; // 5 seconds between similar warnings
@@ -93,6 +124,20 @@ class MessageSafety {
                 } else if (config.severity === 'low' && highestSeverity === 'none') {
                     highestSeverity = 'low';
                 }
+            }
+        }
+
+        // Check for explicit content FIRST (highest priority)
+        for (const pattern of this.explicitPatterns) {
+            if (pattern.test(message)) {
+                detectedIssues.push({
+                    type: 'explicit',
+                    message: 'Message contains inappropriate language',
+                    severity: 'high'
+                });
+                shouldBlock = true;
+                highestSeverity = 'high';
+                break; // One explicit word is enough to block
             }
         }
 
@@ -294,6 +339,20 @@ class MessageSafety {
      * @param {Object} checkResult - Result from checkMessage
      */
     showBlockedNotification(checkResult) {
+        // Determine the reason for blocking
+        let blockReason = 'Contains sensitive information';
+        const issueTypes = checkResult.issues.map(i => i.type);
+
+        if (issueTypes.includes('explicit')) {
+            blockReason = 'Contains inappropriate language';
+        } else if (issueTypes.includes('scam')) {
+            blockReason = 'Contains potential scam indicators';
+        } else if (issueTypes.includes('creditCard') || issueTypes.includes('ssn')) {
+            blockReason = 'Contains sensitive personal information';
+        } else if (issueTypes.includes('phone')) {
+            blockReason = 'Contains phone number';
+        }
+
         // Create notification
         const notification = document.createElement('div');
         notification.className = 'safety-notification';
@@ -301,7 +360,7 @@ class MessageSafety {
             <div class="safety-notification-icon">🛡️</div>
             <div class="safety-notification-text">
                 <strong>Message not sent</strong><br>
-                <span>Contains sensitive information that could be used for scams</span>
+                <span>${blockReason}</span>
             </div>
         `;
 

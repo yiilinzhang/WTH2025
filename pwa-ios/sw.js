@@ -1,9 +1,10 @@
-const CACHE_NAME = 'kopi-kakis-v1';
+const CACHE_NAME = 'kopi-kakis-v3';
 const urlsToCache = [
   '/',
   '/index.html',
   '/styles.css',
   '/app.js',
+  '/message-safety.js',
   '/manifest.json',
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js',
@@ -23,16 +24,37 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Fetch event - serve from cache when offline
+// Fetch event - network first for app files, cache first for external resources
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
-      }
-    )
-  );
+  const url = new URL(event.request.url);
+
+  // For local app files, try network first (to get updates)
+  if (url.origin === location.origin) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Update cache with new version
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME)
+            .then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+          return response;
+        })
+        .catch(() => {
+          // If network fails, fall back to cache
+          return caches.match(event.request);
+        })
+    );
+  } else {
+    // For external resources, use cache first
+    event.respondWith(
+      caches.match(event.request)
+        .then((response) => {
+          return response || fetch(event.request);
+        })
+    );
+  }
 });
 
 // Activate event - clean up old caches
