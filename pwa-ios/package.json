@@ -1,0 +1,9 @@
+{
+  "name": "kopi-kakis-pwa",
+  "version": "1.0.0",
+  "description": "Kopi Kakis Walking Club PWA",
+  "scripts": {
+    "start": "npx http-server -p 8080",
+    "dev": "npx live-server --port=8080"
+  }
+}
