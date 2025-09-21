@@ -698,6 +698,15 @@ function showFindFriendsScreen() {
     document.getElementById('sessionLocationDisplay').textContent = walkingSession.locationName;
     showScreen('findFriendsScreen');
 
+    // Clear any previous participants display
+    const participantsLoading = document.getElementById('participantsLoading');
+    const participantsDisplay = document.getElementById('participantsDisplay');
+    const participantsNames = document.getElementById('participantsNames');
+
+    if (participantsLoading) participantsLoading.style.display = 'block';
+    if (participantsDisplay) participantsDisplay.style.display = 'none';
+    if (participantsNames) participantsNames.innerHTML = '';
+
     // If we already joined an existing session, display the participants immediately
     if (walkingSession.sessionId && walkingSession.groupParticipantNames && walkingSession.groupParticipantNames.length > 0) {
         displayParticipants({
@@ -841,6 +850,15 @@ function startWalkingSession() {
 
     document.getElementById('sessionLocation').textContent = walkingSession.locationName;
     showScreen('walkingScreen');
+
+    // Show initial group bonus if applicable
+    if (walkingSession.isGroupWalk && walkingSession.groupParticipants.length > 1) {
+        const bonusPercentage = (walkingSession.groupParticipants.length - 1) * 10;
+        const bonusIndicator = document.getElementById('bonusIndicator');
+        if (bonusIndicator) {
+            bonusIndicator.textContent = `(+${bonusPercentage}%)`;
+        }
+    }
 
     // Initialize map
     initializeMap();
@@ -1020,11 +1038,23 @@ function startMockMovementForTesting() {
 
             // Add to total distance (already amplified by 100x in updateLocationData)
             walkingSession.distance += mockDistance * 100; // Amplify for testing
-            walkingSession.points = Math.floor(walkingSession.distance * 10);
+
+            // Calculate points with group bonus (10% per additional person)
+            const basePoints = walkingSession.distance * 10;
+            const groupMultiplier = walkingSession.isGroupWalk && walkingSession.groupParticipants.length > 1
+                ? 1 + ((walkingSession.groupParticipants.length - 1) * 0.1)
+                : 1;
+            walkingSession.points = Math.floor(basePoints * groupMultiplier);
 
             // Update UI
             document.getElementById('distanceValue').textContent = walkingSession.distance.toFixed(1);
             document.getElementById('pointsValue').textContent = walkingSession.points;
+
+            // Show group bonus indicator
+            if (walkingSession.isGroupWalk && walkingSession.groupParticipants.length > 1) {
+                const bonusPercentage = (walkingSession.groupParticipants.length - 1) * 10;
+                document.getElementById('bonusIndicator').textContent = `(+${bonusPercentage}%)`;
+            }
 
             // Update debug info
             updateGPSDebugInfo({
@@ -1079,11 +1109,22 @@ function updateLocationData(position, lastPosition) {
             const amplifiedDistance = distance * 100;
             walkingSession.distance += amplifiedDistance;
 
-            walkingSession.points = Math.floor(walkingSession.distance * 10); // More points for testing
+            // Calculate points with group bonus (10% per additional person)
+            const basePoints = walkingSession.distance * 10;
+            const groupMultiplier = walkingSession.isGroupWalk && walkingSession.groupParticipants.length > 1
+                ? 1 + ((walkingSession.groupParticipants.length - 1) * 0.1)
+                : 1;
+            walkingSession.points = Math.floor(basePoints * groupMultiplier);
 
             // Update UI
             document.getElementById('distanceValue').textContent = walkingSession.distance.toFixed(1);
             document.getElementById('pointsValue').textContent = walkingSession.points;
+
+            // Show group bonus indicator
+            if (walkingSession.isGroupWalk && walkingSession.groupParticipants.length > 1) {
+                const bonusPercentage = (walkingSession.groupParticipants.length - 1) * 10;
+                document.getElementById('bonusIndicator').textContent = `(+${bonusPercentage}%)`;
+            }
 
             console.log('✅ Distance UPDATED:', {
                 added: (distance * 1000).toFixed(2) + 'm',
@@ -1445,7 +1486,7 @@ function showCompletionScreen(sessionData) {
 }
 
 // Load walking companions from the group session
-function loadWalkingCompanions() {
+async function loadWalkingCompanions() {
     const friendsList = document.getElementById('completionFriendsList');
     friendsList.innerHTML = '';
 
@@ -1460,17 +1501,43 @@ function loadWalkingCompanions() {
         return;
     }
 
-    otherParticipants.forEach(participantName => {
+    // Get current user's friends list
+    let existingFriends = new Set();
+    try {
+        const friendsSnapshot = await db.collection('kopi').doc(currentUser.uid)
+            .collection('friends').where('status', '==', 'ACCEPTED').get();
+
+        friendsSnapshot.forEach(doc => {
+            const friend = doc.data();
+            existingFriends.add(friend.friendName);
+        });
+    } catch (error) {
+        console.error('Error loading friends list:', error);
+    }
+
+    // Display each participant with appropriate button
+    for (const participantName of otherParticipants) {
         const companionItem = document.createElement('div');
         companionItem.className = 'completion-friend-item';
 
-        companionItem.innerHTML = `
-            <div class="completion-friend-name">${participantName}</div>
-            <button class="completion-add-friend-btn" onclick="addWalkingCompanion('${participantName}')">Add Friend</button>
-        `;
+        const isAlreadyFriend = existingFriends.has(participantName);
+
+        if (isAlreadyFriend) {
+            companionItem.innerHTML = `
+                <div class="completion-friend-name">${participantName}</div>
+                <button class="completion-add-friend-btn" disabled style="background: #4CAF50; cursor: default;">
+                    ✓ Already Friend
+                </button>
+            `;
+        } else {
+            companionItem.innerHTML = `
+                <div class="completion-friend-name">${participantName}</div>
+                <button class="completion-add-friend-btn" onclick="addWalkingCompanion('${participantName}')">Add Friend</button>
+            `;
+        }
 
         friendsList.appendChild(companionItem);
-    });
+    }
 }
 
 async function addWalkingCompanion(participantName) {
@@ -1964,6 +2031,15 @@ async function displayParticipants(participantData) {
     // participantData should contain both names and IDs
     const participants = participantData.names || [];
     const participantIds = participantData.ids || [];
+
+    // Only show participants if there's more than just the current user
+    if (participants.length <= 1) {
+        // Just the current user, keep showing "waiting for others"
+        if (participantsLoading) participantsLoading.style.display = 'block';
+        if (participantsDisplay) participantsDisplay.style.display = 'none';
+        if (participantsNames) participantsNames.innerHTML = '';
+        return;
+    }
 
     if (participants.length > 1) { // More than just the current user
         // Hide loading message, show participants
