@@ -1,98 +1,157 @@
-# Kopi Kakis PWA - iPhone Testing Version
+# Kopi Kakis PWA - iOS/Android Testing Version
 
-## Quick Setup for iPhone Testing
+## Quick Setup for Mobile Testing
 
-### Option 1: Simple HTTP Server (Fastest)
-1. Open Terminal and navigate to this folder:
+### Option 1: HTTPS Server (Recommended for Full PWA Features)
+
+1. **Navigate to project folder:**
    ```bash
    cd /Users/yilinzhang/AndroidStudioProjects/WTH2025/pwa-ios
    ```
 
-2. Start a local server:
+2. **Generate SSL certificates (one-time setup):**
    ```bash
-   # Using Python (if available)
-   python3 -m http.server 8000
+   # Install mkcert if not already installed
+   brew install mkcert
+   mkcert -install
 
-   # OR using Node.js (if available)
-   npx http-server -p 8000
-
-   # OR using PHP (if available)
-   php -S localhost:8000
+   # Generate certificates
+   mkcert localhost 127.0.0.1 ::1
    ```
 
-3. Find your Mac's IP address:
+3. **Start HTTPS server:**
    ```bash
-   ifconfig | grep "inet " | grep -v 127.0.0.1
+   # Using npx http-server with SSL
+   npx http-server -p 8443 -a 0.0.0.0 --ssl --cert localhost.pem --key localhost-key.pem
    ```
 
-4. On your iPhone, open Safari and go to:
-   ```
-   http://YOUR_MAC_IP:8000
-   ```
-   (Replace YOUR_MAC_IP with the IP from step 3)
-
-5. **Add to Home Screen:**
-   - Tap the Share button in Safari
-   - Tap "Add to Home Screen"
-   - The app will work like a native app!
-
-### Option 2: Firebase Hosting (More Permanent)
-1. Install Firebase CLI:
+4. **Find your Mac's IP address:**
    ```bash
-   npm install -g firebase-tools
+   ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}' | head -1
    ```
 
-2. Login and initialize:
+5. **Access on mobile device:**
+   - Open Safari (iOS) or Chrome (Android)
+   - Go to: `https://YOUR_MAC_IP:8443`
+   - Accept the certificate warning (it's safe - it's your local server)
+   - **Add to Home Screen:**
+     - iOS: Tap Share → Add to Home Screen
+     - Android: Menu → Add to Home screen
+
+### Option 2: Simple HTTP Server (Quick Testing)
+
+1. **Navigate to project folder:**
    ```bash
-   firebase login
-   firebase init hosting
+   cd /Users/yilinzhang/AndroidStudioProjects/WTH2025/pwa-ios
    ```
 
-3. Deploy:
+2. **Start HTTP server:**
    ```bash
-   firebase deploy
+   # Using Node.js
+   npx http-server -p 8080 -a 0.0.0.0
+
+   # OR using Python
+   python3 -m http.server 8080 --bind 0.0.0.0
    ```
 
-## Features Working on iPhone
+3. **Access on mobile:**
+   - Go to: `http://YOUR_MAC_IP:8080`
+   - Note: Some features (camera, GPS) may require HTTPS
 
-✅ **Firebase Authentication** - Same login as Android app
-✅ **Same Database** - All your walking data syncs
-✅ **QR Scanner** - Camera works in Safari
-✅ **GPS Tracking** - Location tracking during walks
-✅ **Friends System** - Add friends by email
-✅ **Walking History** - View past sessions
-✅ **Rewards System** - Redeem coffee with points
-✅ **PWA Features** - Works offline, home screen icon
+## Features Working on Mobile
 
-## Test with Your QR Codes
+✅ **Message Safety System** - AI-powered scam prevention
+✅ **Firebase Authentication** - Synced across all devices
+✅ **Real-time Chat** - With automatic message filtering
+✅ **QR Scanner** - Camera access for location check-ins
+✅ **GPS Tracking** - Live location during walks
+✅ **Friends System** - Add friends, see who's walking
+✅ **Walking Sessions** - Join friends at same location
+✅ **Rewards System** - Earn points, redeem coffee
+✅ **Multi-language** - English, Chinese, Malay
+✅ **PWA Features** - Offline support, app-like experience
 
-The app works with your existing QR codes:
+## New Safety Features
+
+### Message Protection
+- **Blocks sensitive info**: Credit cards, SSNs, passwords, phone numbers
+- **Detects scam patterns**: Urgent money requests, suspicious links
+- **Filters inappropriate content**: Automatic profanity blocking
+- **Silent protection**: Messages blocked without sending
+
+## Test Locations (QR Codes)
+
+The app recognizes these locations:
 - East Coast Park
 - Botanic Garden
 - Bishan Park
+- Marina Bay
+- Jurong Lake Gardens
 
-Just scan or type the location name!
+## Required Permissions
 
-## Notes
+**iOS Safari:**
+- Camera (for QR scanning)
+- Location (for GPS tracking)
+- Notifications (optional)
 
-- **Camera Permission:** iPhone will ask for camera permission for QR scanning
-- **Location Permission:** iPhone will ask for location permission for GPS tracking
-- **Same Firebase Project:** Uses your existing wth2025 Firebase project
-- **Offline Support:** Works without internet after first load
+**Android Chrome:**
+- Camera permission
+- Location permission
+- Install app permission
 
 ## Troubleshooting
 
-**Can't access from iPhone?**
-- Make sure iPhone and Mac are on same WiFi
-- Check Mac's firewall settings
-- Try http (not https) for local testing
+### Can't connect from phone?
+```bash
+# Check firewall is allowing connections
+sudo pfctl -d  # Temporarily disable macOS firewall (if needed)
 
-**QR Scanner not working?**
-- Allow camera permission in Safari
-- Make sure you're using Safari (not Chrome)
+# Ensure both devices on same network
+ping YOUR_PHONE_IP
+```
 
-**GPS not working?**
-- Allow location permission when prompted
-- Make sure you're using HTTPS or localhost
+### Certificate warnings?
+- This is normal for local development
+- Tap "Advanced" → "Proceed to site"
+- The connection is still encrypted
 
-Your Android app and iPhone PWA share the same Firebase backend, so all your data syncs perfectly! 🎉
+### Features not working?
+- **Camera/GPS need HTTPS** - Use Option 1 setup
+- **Clear browser cache** - Settings → Safari → Clear History
+- **Service Worker issues** - Close all tabs and retry
+
+### App crashes or shows old version?
+1. Clear all website data:
+   - iOS: Settings → Safari → Advanced → Website Data → Remove All
+   - Android: Chrome → Settings → Privacy → Clear browsing data
+2. Close all browser tabs
+3. Re-open the URL fresh
+
+## Database Structure
+
+**Firebase Collections:**
+- `kopi` - User profiles, points, friends
+- `activeSessions` - Live walking sessions
+- `scheduledWalks` - Planned future walks
+- `messages` - Chat messages (filtered for safety)
+
+## Development Notes
+
+**Key Files:**
+- `app.js` - Main application logic
+- `message-safety.js` - AI message filtering
+- `sw.js` - Service worker for offline support
+- `index.html` - Main UI structure
+- `styles.css` - All styling
+
+**Testing Message Safety:**
+- Open chat with a friend
+- Try sending: phone numbers, credit cards, passwords
+- Messages will be blocked automatically
+
+## Support
+
+Your Android app and iPhone PWA share the same Firebase backend, so all data syncs in real-time! 🎉
+
+For issues or questions, check the browser console for errors (Safari → Develop → iPhone → Console).
