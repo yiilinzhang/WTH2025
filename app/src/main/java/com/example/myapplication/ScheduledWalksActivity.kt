@@ -110,7 +110,7 @@ class ScheduledWalksActivity : AppCompatActivity() {
     fun switchToMyWalksTab() {
         binding.viewPager.currentItem = 0
     }
-    rem// Simple method to refresh just the MyWalks data
+    // Simple method to refresh just the MyWalks data
     fun refreshMyWalksData() {
         myWalksFragment?.takeIf { it.isAdded }?.refreshWalks()
     }

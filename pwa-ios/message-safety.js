@@ -23,7 +23,7 @@ class MessageSafety {
             phone: {
                 pattern: /(?:\+?\d{1,3}[\s-]?)?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}\b|\b\d{8,15}\b/,
                 message: 'Phone number detected',
-                severity: 'low'
+                severity: 'high'  // Changed to high to block all phone numbers
             },
             email: {
                 pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/,
@@ -269,7 +269,7 @@ class MessageSafety {
     }
 
     /**
-     * Process message before sending
+     * Process message before sending - silently blocks unsafe messages
      * @param {string} message - Message to send
      * @param {Function} sendCallback - Function to call if message is safe
      * @returns {Promise<boolean>} - True if message was sent
@@ -283,19 +283,90 @@ class MessageSafety {
             return true;
         }
 
-        // Show warning
-        const userChoice = await this.showWarning(checkResult);
+        // Message is not safe - silently block and show notification
+        this.showBlockedNotification(checkResult);
+        console.log('Message blocked due to sensitive content:', checkResult.issues);
+        return false;
+    }
 
-        if (userChoice && !checkResult.shouldBlock) {
-            // User chose to send anyway (only for non-blocked messages)
-            console.warn('User chose to send message with warnings:', checkResult.issues);
-            await sendCallback(message);
-            return true;
+    /**
+     * Show a simple notification that the message was blocked
+     * @param {Object} checkResult - Result from checkMessage
+     */
+    showBlockedNotification(checkResult) {
+        // Create notification
+        const notification = document.createElement('div');
+        notification.className = 'safety-notification';
+        notification.innerHTML = `
+            <div class="safety-notification-icon">🛡️</div>
+            <div class="safety-notification-text">
+                <strong>Message not sent</strong><br>
+                <span>Contains sensitive information that could be used for scams</span>
+            </div>
+        `;
+
+        // Add styles if not already present
+        if (!document.getElementById('safetyNotificationStyles')) {
+            const style = document.createElement('style');
+            style.id = 'safetyNotificationStyles';
+            style.textContent = `
+                .safety-notification {
+                    position: fixed;
+                    top: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #FFE5E5;
+                    border: 2px solid #E53935;
+                    border-radius: 12px;
+                    padding: 12px 20px;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    z-index: 10000;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    animation: slideDown 0.3s ease;
+                    max-width: 90%;
+                }
+
+                @keyframes slideDown {
+                    from {
+                        transform: translateX(-50%) translateY(-100px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(-50%) translateY(0);
+                        opacity: 1;
+                    }
+                }
+
+                .safety-notification-icon {
+                    font-size: 24px;
+                }
+
+                .safety-notification-text {
+                    flex: 1;
+                }
+
+                .safety-notification-text strong {
+                    color: #C62828;
+                    font-size: 14px;
+                }
+
+                .safety-notification-text span {
+                    color: #666;
+                    font-size: 12px;
+                }
+            `;
+            document.head.appendChild(style);
         }
 
-        // Message was blocked or user cancelled
-        console.log('Message blocked or cancelled:', checkResult.issues);
-        return false;
+        document.body.appendChild(notification);
+
+        // Auto-remove after 4 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideUp 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 4000);
     }
 }
 
