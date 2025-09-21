@@ -1964,8 +1964,8 @@ async function redeemDrink(drinkName, pointsCost) {
         });
 
         showMessage(`${drinkName} redeemed successfully! Your coupon code is: ${couponCode}`);
-        loadUserData();
-        loadCoupons();
+        await loadUserData();
+        // loadCoupons() will be called automatically by the Firebase listener
 
     } catch (error) {
         showMessage('Failed to redeem: ' + error.message);
@@ -2667,6 +2667,352 @@ async function loadMessages(friendId) {
         document.getElementById('chatMessages').innerHTML = '<div style="text-align: center; padding: 20px; color: #E53935;">Failed to load messages</div>';
     }
 }
+
+// Schedule Functions (defined before DOMContentLoaded so they're available globally)
+function switchTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+
+    // Remove active class from all tabs
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Show selected tab content
+    if (tabName === 'allWalks') {
+        document.getElementById('allWalksContent').classList.add('active');
+        document.getElementById('allWalksTab').classList.add('active');
+        loadMyWalks();
+        loadNearbyWalks();
+    } else if (tabName === 'scheduleWalk') {
+        document.getElementById('scheduleWalkContent').classList.add('active');
+        document.getElementById('scheduleWalkTab').classList.add('active');
+    }
+}
+
+async function loadMyWalks() {
+    if (!currentUser) {
+        console.log('No current user for loadMyWalks');
+        return;
+    }
+
+    const myWalksList = document.getElementById('myWalksList');
+    if (!myWalksList) {
+        console.error('myWalksList element not found');
+        return;
+    }
+
+    myWalksList.innerHTML = '<div style="padding: 20px; color: #8B5A3C;">Loading...</div>';
+
+    try {
+        const now = Date.now();
+        console.log('Loading walks for user:', currentUser.uid);
+
+        // Query only walks created by current user
+        console.log('Querying walks where createdBy ==', currentUser.uid);
+        const snapshot = await db.collection('scheduledWalks')
+            .where('createdBy', '==', currentUser.uid)
+            .get();
+
+        console.log('Firebase query returned', snapshot.size, 'documents');
+
+        const walks = [];
+        const expiredWalks = [];
+
+        console.log('Found', snapshot.size, 'walks in database');
+
+        snapshot.forEach(doc => {
+            const walk = { id: doc.id, ...doc.data() };
+            const walkTime = walk.scheduledTime;
+            console.log('Walk:', walk.locationName, 'Time:', new Date(walkTime), 'CreatedBy:', walk.createdBy, 'CurrentUser:', currentUser.uid);
+
+            // Check if createdBy matches current user
+            const isMyWalk = walk.createdBy === currentUser.uid;
+            console.log('Is my walk?', isMyWalk, 'Match:', walk.createdBy, '===', currentUser.uid);
+
+            // Check if walk is expired (30 minutes past scheduled time)
+            if (walkTime < (now - 30 * 60 * 1000)) {
+                console.log('Walk is expired, adding to delete list');
+                expiredWalks.push(doc.id);
+            } else {
+                console.log('Walk is not expired, adding to walks list');
+                walks.push(walk);
+            }
+        });
+
+        console.log('Total walks after filtering:', walks.length);
+        console.log('Walks to delete (expired):', expiredWalks.length);
+
+        // Sort walks by scheduled time
+        walks.sort((a, b) => a.scheduledTime - b.scheduledTime);
+
+        // Delete expired walks
+        for (const walkId of expiredWalks) {
+            await db.collection('scheduledWalks').doc(walkId).delete();
+            console.log('Deleted expired walk:', walkId);
+        }
+
+        if (walks.length === 0) {
+            myWalksList.innerHTML = '<div style="padding: 20px; color: #8B5A3C; text-align: center;">No scheduled walks</div>';
+            return;
+        }
+
+        myWalksList.innerHTML = walks.map(walk => {
+            const date = new Date(walk.scheduledTime);
+            const timeUntil = walk.scheduledTime - now;
+            const minutesUntil = Math.floor(timeUntil / (60 * 1000));
+            const hoursUntil = Math.floor(minutesUntil / 60);
+
+            let timeText = '';
+            if (minutesUntil < 0) {
+                timeText = 'Started';
+            } else if (hoursUntil > 0) {
+                timeText = `In ${hoursUntil}h ${minutesUntil % 60}m`;
+            } else {
+                timeText = `In ${minutesUntil}m`;
+            }
+
+            return `
+                <div class="walk-item">
+                    <div class="walk-location">${walk.locationName}</div>
+                    <div class="walk-time">${date.toLocaleString()}</div>
+                    <div class="walk-status">${timeText}</div>
+                    <button class="join-btn" onclick="joinScheduledWalk('${walk.id}')">Join</button>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error('Error loading my walks:', error);
+        myWalksList.innerHTML = '<div style="padding: 20px; color: #E53935;">Failed to load walks</div>';
+    }
+}
+
+async function loadNearbyWalks() {
+    const nearbyWalksList = document.getElementById('nearbyWalksList');
+    if (!nearbyWalksList) {
+        console.error('nearbyWalksList element not found');
+        return;
+    }
+
+    nearbyWalksList.innerHTML = '<div style="padding: 20px; color: #8B5A3C;">Loading...</div>';
+
+    try {
+        const now = Date.now();
+        console.log('Loading nearby walks...');
+
+        // Get all walks without complex query first
+        const snapshot = await db.collection('scheduledWalks')
+            .get();
+
+        const walks = [];
+        const expiredWalks = [];
+
+        console.log('Found', snapshot.size, 'total walks');
+
+        snapshot.forEach(doc => {
+            const walk = { id: doc.id, ...doc.data() };
+
+            // Check if walk is expired (30 minutes past scheduled time)
+            if (walk.scheduledTime < (now - 30 * 60 * 1000)) {
+                expiredWalks.push(doc.id);
+            } else if (walk.scheduledTime > (now - 30 * 60 * 1000)) {
+                // Only show walks that haven't started more than 30 mins ago
+                // and are not created by current user
+                if (walk.createdBy !== currentUser?.uid) {
+                    walks.push(walk);
+                }
+            }
+        });
+
+        // Sort walks by scheduled time
+        walks.sort((a, b) => a.scheduledTime - b.scheduledTime);
+
+        // Limit to 10 walks
+        const limitedWalks = walks.slice(0, 10);
+
+        // Delete expired walks
+        for (const walkId of expiredWalks) {
+            await db.collection('scheduledWalks').doc(walkId).delete();
+            console.log('Deleted expired walk:', walkId);
+        }
+
+        if (limitedWalks.length === 0) {
+            nearbyWalksList.innerHTML = '<div style="padding: 20px; color: #8B5A3C; text-align: center;">No nearby walks scheduled</div>';
+            return;
+        }
+
+        nearbyWalksList.innerHTML = limitedWalks.map(walk => {
+            const date = new Date(walk.scheduledTime);
+            const timeUntil = walk.scheduledTime - now;
+            const minutesUntil = Math.floor(timeUntil / (60 * 1000));
+            const hoursUntil = Math.floor(minutesUntil / 60);
+
+            let timeText = '';
+            if (minutesUntil < 0) {
+                timeText = 'Started';
+            } else if (hoursUntil > 0) {
+                timeText = `In ${hoursUntil}h ${minutesUntil % 60}m`;
+            } else {
+                timeText = `In ${minutesUntil}m`;
+            }
+
+            return `
+                <div class="walk-item">
+                    <div class="walk-location">${walk.locationName}</div>
+                    <div class="walk-time">${date.toLocaleString()}</div>
+                    <div class="walk-organizer">By ${walk.createdByName || 'Anonymous'}</div>
+                    <div class="walk-status">${timeText}</div>
+                    <button class="join-btn" onclick="joinScheduledWalk('${walk.id}')">Join</button>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error('Error loading nearby walks:', error);
+        nearbyWalksList.innerHTML = '<div style="padding: 20px; color: #E53935;">Failed to load walks</div>';
+    }
+}
+
+async function createWalk() {
+    const location = document.getElementById('walkLocation').value;
+    const date = document.getElementById('walkDate').value;
+    const time = document.getElementById('walkTime').value;
+
+    console.log('Creating walk:', { location, date, time });
+
+    if (!location || !date || !time) {
+        showMessage('Please fill in all fields');
+        return;
+    }
+
+    if (!currentUser) {
+        showMessage('Please login first');
+        return;
+    }
+
+    try {
+        const scheduledTime = new Date(`${date}T${time}`).getTime();
+
+        // Don't allow scheduling in the past
+        if (scheduledTime < Date.now()) {
+            showMessage('Cannot schedule walks in the past');
+            return;
+        }
+
+        const walkData = {
+            locationName: location,
+            scheduledTime: scheduledTime,
+            createdBy: currentUser.uid,
+            createdByName: currentUser.displayName || currentUser.email.split('@')[0],
+            createdAt: Date.now(),
+            participants: [currentUser.uid]
+        };
+
+        console.log('Creating walk with data:', walkData);
+        console.log('Current user UID:', currentUser.uid);
+
+        const docRef = await db.collection('scheduledWalks').add(walkData);
+        console.log('Walk created with ID:', docRef.id);
+
+        showMessage('Walk scheduled successfully!');
+
+        // Reset form
+        document.getElementById('createWalkForm').reset();
+        document.getElementById('walkLocation').value = '';
+        document.querySelectorAll('.location-btn').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+
+        // Clear selected location text
+        const selectedText = document.getElementById('selectedLocationText');
+        if (selectedText) {
+            selectedText.textContent = '';
+        }
+
+        // Switch to all walks tab
+        switchTab('allWalks');
+
+    } catch (error) {
+        console.error('Error creating walk:', error);
+        showMessage('Failed to schedule walk: ' + error.message, true);
+    }
+}
+
+async function joinScheduledWalk(walkId) {
+    if (!currentUser) {
+        showMessage('Please login first');
+        return;
+    }
+
+    try {
+        const walkDoc = await db.collection('scheduledWalks').doc(walkId).get();
+
+        if (!walkDoc.exists) {
+            showMessage('Walk not found');
+            return;
+        }
+
+        const walk = walkDoc.data();
+
+        // Start walking session with this location
+        walkingSession.locationName = walk.locationName;
+        walkingSession.isGroupWalk = true;
+        walkingSession.scheduledWalkId = walkId;
+
+        // Navigate to find friends screen
+        showFindFriendsScreen();
+
+    } catch (error) {
+        console.error('Error joining walk:', error);
+        showMessage('Failed to join walk', true);
+    }
+}
+
+function selectLocation(location) {
+    document.getElementById('walkLocation').value = location;
+
+    // Update button styles
+    document.querySelectorAll('.location-btn').forEach(btn => {
+        btn.classList.remove('selected');
+        if (btn.textContent.includes(location)) {
+            btn.classList.add('selected');
+        }
+    });
+
+    // Update selected location text if it exists
+    const selectedText = document.getElementById('selectedLocationText');
+    if (selectedText) {
+        selectedText.textContent = `Selected: ${location}`;
+    }
+
+    console.log('Location selected:', location);
+}
+
+// Make functions globally available
+window.switchTab = switchTab;
+window.loadMyWalks = loadMyWalks;
+window.loadNearbyWalks = loadNearbyWalks;
+window.createWalk = createWalk;
+window.joinScheduledWalk = joinScheduledWalk;
+window.selectLocation = selectLocation;
+
+console.log('Schedule functions loaded:', {
+    switchTab: typeof window.switchTab,
+    createWalk: typeof window.createWalk,
+    selectLocation: typeof window.selectLocation
+});
+
+// Auto-refresh schedule every minute
+setInterval(() => {
+    const scheduleScreen = document.getElementById('scheduleScreen');
+    if (scheduleScreen && !scheduleScreen.classList.contains('hidden')) {
+        loadMyWalks();
+        loadNearbyWalks();
+    }
+}, 60000);
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {

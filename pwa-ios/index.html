@@ -413,7 +413,7 @@
 
             <!-- Schedule Walk Tab Content -->
             <div id="scheduleWalkContent" class="tab-content">
-                <form id="createWalkForm" class="create-walk-form">
+                <form id="createWalkForm" class="create-walk-form" onsubmit="event.preventDefault(); createWalk(); return false;">
                     <div class="form-group">
                         <label style="font-size: 20px; margin-bottom: 16px;">📍 Choose Location</label>
                         <div class="location-buttons">
@@ -427,7 +427,7 @@
                                 🌳<br>Bishan Park
                             </button>
                         </div>
-                        <input type="hidden" id="walkLocation" required>
+                        <input type="text" id="walkLocation" required style="position: absolute; left: -9999px;" tabindex="-1">
                         <p id="selectedLocationText" style="text-align: center; color: #6B4423; font-size: 18px; margin-top: 15px; font-weight: bold;"></p>
                     </div>
 
@@ -470,58 +470,6 @@
         </div>
     </div>
 
-    <!-- Create Walk Screen -->
-    <div id="createWalkScreen" class="screen hidden">
-        <div class="create-walk-container">
-            <div class="header">
-                <button onclick="showSchedule()" class="back-btn">←</button>
-                <h2>Schedule New Walk</h2>
-            </div>
-
-            <form id="createWalkForm" class="create-walk-form">
-                <div class="form-group">
-                    <label for="walkLocation">Location</label>
-                    <select id="walkLocation" required>
-                        <option value="">Select Location</option>
-                        <option value="East Coast Park">East Coast Park</option>
-                        <option value="Botanic Garden">Botanic Garden</option>
-                        <option value="Bishan Park">Bishan Park</option>
-                        <option value="Marina Bay">Marina Bay</option>
-                        <option value="Sentosa">Sentosa</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="walkDate">Date</label>
-                    <input type="date" id="walkDate" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="walkTime">Time</label>
-                    <input type="time" id="walkTime" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="maxParticipants">Max Participants</label>
-                    <select id="maxParticipants">
-                        <option value="4">4 people</option>
-                        <option value="6">6 people</option>
-                        <option value="8" selected>8 people</option>
-                        <option value="10">10 people</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="walkDescription">Description (optional)</label>
-                    <textarea id="walkDescription" placeholder="Tell others about your walk plans..."></textarea>
-                </div>
-
-                <button type="submit" class="btn-primary submit-walk-btn">
-                    Create Walk
-                </button>
-            </form>
-        </div>
-    </div>
 
     <!-- Loading Overlay -->
     <div id="loading" class="loading hidden">
