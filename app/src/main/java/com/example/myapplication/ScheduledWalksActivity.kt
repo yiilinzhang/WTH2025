@@ -116,7 +116,7 @@ class ScheduledWalksActivity : AppCompatActivity() {
     }
 
 
-    fun refreshWalksAndSwitchToMyWalks() {
+    fun refreshWalksAndSwitchToMyWalks() {stop
         // Switch to My Walks tab
         switchToMyWalksTab()
 
