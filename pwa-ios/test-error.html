@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <h1>Testing for Errors</h1>
+    <div id="errorLog" style="background: #f0f0f0; padding: 20px; font-family: monospace;">
+        Loading...
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <!-- Message Safety -->
+    <script src="message-safety.js"></script>
+
+    <script>
+        const errorLog = document.getElementById('errorLog');
+        let errors = [];
+
+        window.addEventListener('error', function(e) {
+            const error = `Error: ${e.message} at ${e.filename}:${e.lineno}:${e.colno}`;
+            errors.push(error);
+            errorLog.innerHTML = errors.join('<br>');
+        });
+
+        // Try loading the main app
+        const script = document.createElement('script');
+        script.src = 'app.js';
+        script.onload = function() {
+            if (errors.length === 0) {
+                errorLog.innerHTML = '✅ No errors found! App loaded successfully.';
+            }
+        };
+        script.onerror = function() {
+            errors.push('Failed to load app.js');
+            errorLog.innerHTML = errors.join('<br>');
+        };
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>
